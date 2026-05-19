@@ -1,4 +1,4 @@
-import { getApiBaseUrl, getApiV1Url } from './api-config';
+import { getClientApiUrl } from './api-config';
 
 export class ApiError extends Error {
   constructor(
@@ -26,7 +26,7 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(getApiV1Url(endpoint), {
+  const res = await fetch(getClientApiUrl(endpoint), {
     ...rest,
     headers,
     credentials: 'same-origin',
@@ -112,4 +112,4 @@ export const api = {
 };
 
 /** @deprecated Use getApiBaseUrl from api-config */
-export const API_BASE_URL = getApiBaseUrl();
+export { getApiBaseUrl as API_BASE_URL } from './api-config';

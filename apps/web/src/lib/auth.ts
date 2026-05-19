@@ -7,10 +7,10 @@ import {
   isValidLoginResponse,
   logAuth,
   logAuthError,
-} from './auth-login';
+} from './api-config';
 
-if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
-  logAuthError('NEXTAUTH_SECRET is not set — sessions will fail');
+if (!process.env.NEXTAUTH_SECRET) {
+  logAuthError('NEXTAUTH_SECRET is not set — authentication will fail');
 }
 
 export const authOptions: NextAuthOptions = {
@@ -24,33 +24,29 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.password) {
-          logAuthError('Missing email or password in credentials');
+          logAuthError('Missing email or password');
           return null;
         }
 
         const email = credentials.email.trim().toLowerCase();
         const password = credentials.password;
 
-        logAuth('BACKEND_URL', process.env.BACKEND_URL ?? '(not set)');
-        logAuth('NEXTAUTH_URL', process.env.NEXTAUTH_URL ?? '(not set)');
-        logAuth('Login attempt for', email);
+        logAuth('Config', {
+          BACKEND_URL: process.env.BACKEND_URL ?? '(not set)',
+          NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? '(not set)',
+          NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? '(not set)',
+        });
 
-        const urls = getAuthLoginUrls();
-
-        for (const url of urls) {
+        for (const url of getAuthLoginUrls()) {
           logAuth('AUTH URL', url);
 
           const attempt = await attemptBackendLogin(url, email, password);
 
           logAuth('AUTH STATUS', attempt.status);
-          logAuth('AUTH BODY', attempt.data ?? attempt.error ?? '(empty)');
+          logAuth('AUTH BODY', attempt.data ?? attempt.error ?? null);
 
           if (!attempt.ok) {
-            logAuthError('AUTH FAILED', {
-              url: attempt.url,
-              status: attempt.status,
-              body: attempt.data,
-            });
+            logAuthError('AUTH FAILED', { url, status: attempt.status, body: attempt.data });
             continue;
           }
 
@@ -61,7 +57,9 @@ export const authOptions: NextAuthOptions = {
             continue;
           }
 
-          const user: User = {
+          logAuth('Authorize success', { email: data.user.email, id: data.user.id });
+
+          return {
             id: data.user.id,
             email: data.user.email,
             name: data.user.email,
@@ -70,9 +68,6 @@ export const authOptions: NextAuthOptions = {
             roles: data.user.roles ?? [],
             permissions: data.user.permissions ?? [],
           };
-
-          logAuth('Authorize success', { id: user.id, email: user.email });
-          return user;
         }
 
         logAuthError('All login URL attempts failed');
@@ -91,19 +86,21 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.roles = user.roles ?? [];
         token.permissions = user.permissions ?? [];
-        token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.id as string) ?? '';
+        session.user.roles = (token.roles as string[]) ?? [];
+        session.user.permissions = (token.permissions as string[]) ?? [];
+      }
       session.accessToken = (token.accessToken as string) ?? '';
-      session.user.id = (token.id as string) ?? '';
-      session.user.roles = (token.roles as string[]) ?? [];
-      session.user.permissions = (token.permissions as string[]) ?? [];
       return session;
     },
   },

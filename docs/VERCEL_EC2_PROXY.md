@@ -13,14 +13,18 @@ Browsers **block** HTTPS pages from calling HTTP APIs (Mixed Content). This caus
 
 ## Solution — Vercel Proxy Rewrites
 
+All API paths are versioned on the backend as `/api/v1/*`. The proxy injects that prefix:
+
 ```
 Browser (HTTPS)
-  → /api/backend/api/v1/*  (same-origin, secure)
-    → Vercel server rewrite
-      → http://13.233.16.121:4000/api/v1/*  (server-to-server, allowed)
+  → /api/backend/auth/login  (same-origin, secure)
+    → Vercel rewrite: /api/backend/:path* → EC2/api/v1/:path*
+      → http://13.233.16.121:4000/api/v1/auth/login
 ```
 
-NextAuth runs **server-side** and calls EC2 directly via `BACKEND_URL` (no browser involved).
+NextAuth runs **server-side** and calls EC2 directly via `BACKEND_URL/api/v1/*`. If direct fetch fails, it retries via the same-origin proxy URL.
+
+URL resolution is centralized in `apps/web/src/lib/api-config.ts`.
 
 ## Vercel Environment Variables
 
@@ -35,7 +39,11 @@ Set in **Vercel Dashboard → Settings → Environment Variables** (Production +
 | `NEXT_PUBLIC_APP_URL` | `https://shirkat-gah-web.vercel.app` | Yes |
 | `AUTH_DEBUG` | `true` *(temporary, for Vercel logs)* | No |
 
-**Important:** `BACKEND_URL` must NOT use `NEXT_PUBLIC_` prefix.
+**Important:**
+
+- `BACKEND_URL` must NOT use `NEXT_PUBLIC_` prefix.
+- `BACKEND_URL` must be set at **build time** — rewrites are baked into the Next.js config during deploy.
+- Do not append `/api/v1` to `BACKEND_URL`; the rewrite and server helpers add it.
 
 ## EC2 Backend Environment
 
@@ -63,9 +71,8 @@ pnpm db:seed
 
 ```bash
 cd /opt/shirkat-gah
-# Update .env.production with CORS_ORIGINS
 bash deploy/scripts/deployment.sh
-curl http://13.233.16.121:4000/health
+curl http://13.233.16.121:4000/api/v1/health
 curl -X POST http://13.233.16.121:4000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@shirkatgah.org","password":"Admin@123456"}'
@@ -75,14 +82,14 @@ curl -X POST http://13.233.16.121:4000/api/v1/auth/login \
 
 1. Push code to GitHub
 2. Set environment variables (table above)
-3. Redeploy (Build Command: auto, Root Directory: `apps/web`)
+3. Redeploy (Root Directory: `apps/web`)
 4. Test login at `https://shirkat-gah-web.vercel.app/auth/login`
 
 ### 3. Verify proxy
 
 ```bash
 curl https://shirkat-gah-web.vercel.app/api/backend/health
-curl https://shirkat-gah-web.vercel.app/api/backend/api/v1/dashboard/public
+curl https://shirkat-gah-web.vercel.app/api/backend/dashboard/public
 ```
 
 ## Local Development
@@ -91,6 +98,15 @@ Copy `apps/web/.env.local.example` to `apps/web/.env.local`:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:4000
+BACKEND_URL=http://localhost:4000
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=dev-nextauth-secret-change-in-production
+```
+
+To test the Vercel proxy pattern locally:
+
+```bash
+NEXT_PUBLIC_API_URL=/api/backend
 BACKEND_URL=http://localhost:4000
 ```
 

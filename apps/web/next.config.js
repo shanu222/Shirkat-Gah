@@ -29,14 +29,14 @@ const nextConfig = {
   /**
    * Proxy browser API calls through Vercel (HTTPS) → EC2 backend (HTTP).
    * Browser uses NEXT_PUBLIC_API_URL=/api/backend (same-origin, no mixed content).
-   * Example: /api/backend/api/v1/auth/login → http://EC2:4000/api/v1/auth/login
+   * Example: /api/backend/auth/login → http://EC2:4000/api/v1/auth/login
    */
   async rewrites() {
     return {
       beforeFiles: [
         {
           source: '/api/backend/:path*',
-          destination: `${BACKEND_URL}/:path*`,
+          destination: `${BACKEND_URL}/api/v1/:path*`,
         },
       ],
     };
