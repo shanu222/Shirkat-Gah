@@ -6,6 +6,7 @@ node_modules/
 dist/
 logs/
 *.log
+*.tsbuildinfo
 .next/
 out/
 .turbo/

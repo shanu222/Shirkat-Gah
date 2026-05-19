@@ -19,6 +19,12 @@
     },
     "typecheck": {
       "dependsOn": ["^build"]
+    },
+    "@shirkat-gah/web#build": {
+      "dependsOn": ["@shirkat-gah/shared#build"]
+    },
+    "@shirkat-gah/api#build": {
+      "dependsOn": ["@shirkat-gah/database#build", "@shirkat-gah/shared#build"]
     }
   }
 }

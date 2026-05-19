@@ -30,7 +30,7 @@ jobs:
         run: pnpm install
 
       - name: Build verification
-        run: pnpm --filter @shirkat-gah/web build
+        run: pnpm turbo run build --filter=@shirkat-gah/web
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}

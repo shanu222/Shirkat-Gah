@@ -21,7 +21,12 @@ Vercel (Next.js)  ──HTTPS──▶  Nginx (EC2)  ──▶  PM2 Cluster (Nes
 ```bash
 pnpm install
 pnpm db:generate
-pnpm build   # compiles database + shared + api + web
+pnpm build:production   # full stack: database + shared + api + web
+```
+
+Or for API-only deploy after `db:generate`:
+```bash
+pnpm turbo run build --filter=@shirkat-gah/api
 ```
 
 Verify artifacts:
@@ -53,6 +58,21 @@ ln -sf .env.production .env
 ```bash
 bash deploy/scripts/deployment.sh
 ```
+
+## Vercel Frontend
+
+**Root Directory:** `apps/web` (or repo root with root `vercel.json`)
+
+**Build command (auto via `apps/web/vercel.json`):**
+```bash
+cd ../.. && pnpm turbo run build --filter=@shirkat-gah/web
+```
+
+This builds `@shirkat-gah/shared` first (via Turbo `^build` + explicit web dependency), then runs `next build`.
+
+**Required env vars:** `NEXT_PUBLIC_API_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
+
+Do **not** point `@shirkat-gah/shared` at `src/` — runtime uses `packages/shared/dist/index.js` only.
 
 ## PM2 Commands
 
@@ -95,7 +115,7 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d api.shirkatgah.org
 ```
 
-## Vercel Frontend
+## Vercel Environment Variables
 
 | Variable | Value |
 |----------|-------|
