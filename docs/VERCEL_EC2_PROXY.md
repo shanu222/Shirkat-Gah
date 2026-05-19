@@ -7,7 +7,7 @@ Temporary production setup using Vercel HTTPS frontend and EC2 HTTP backend.
 | Layer | URL | Protocol |
 |-------|-----|----------|
 | Frontend | `https://shirkat-gah-web.vercel.app` | HTTPS |
-| Backend | `http://13.233.16.121:3001` | HTTP |
+| Backend | `http://13.233.16.121:4000` | HTTP |
 
 Browsers **block** HTTPS pages from calling HTTP APIs (Mixed Content). This caused login failures and 401 errors.
 
@@ -17,7 +17,7 @@ Browsers **block** HTTPS pages from calling HTTP APIs (Mixed Content). This caus
 Browser (HTTPS)
   → /api/backend/api/v1/*  (same-origin, secure)
     → Vercel server rewrite
-      → http://13.233.16.121:3001/api/v1/*  (server-to-server, allowed)
+      → http://13.233.16.121:4000/api/v1/*  (server-to-server, allowed)
 ```
 
 NextAuth runs **server-side** and calls EC2 directly via `BACKEND_URL` (no browser involved).
@@ -29,10 +29,11 @@ Set in **Vercel Dashboard → Settings → Environment Variables** (Production +
 | Variable | Value | Exposed to browser? |
 |----------|-------|---------------------|
 | `NEXT_PUBLIC_API_URL` | `/api/backend` | Yes |
-| `BACKEND_URL` | `http://13.233.16.121:3001` | No (server only) |
+| `BACKEND_URL` | `http://13.233.16.121:4000` | No (server only) |
 | `NEXTAUTH_URL` | `https://shirkat-gah-web.vercel.app` | No |
 | `NEXTAUTH_SECRET` | *(64+ char random string)* | No |
 | `NEXT_PUBLIC_APP_URL` | `https://shirkat-gah-web.vercel.app` | Yes |
+| `AUTH_DEBUG` | `true` *(temporary, for Vercel logs)* | No |
 
 **Important:** `BACKEND_URL` must NOT use `NEXT_PUBLIC_` prefix.
 
@@ -44,10 +45,10 @@ In `.env.production` on EC2:
 CORS_ORIGINS=https://shirkat-gah-web.vercel.app
 NEXT_PUBLIC_APP_URL=https://shirkat-gah-web.vercel.app
 API_HOST=0.0.0.0
-API_PORT=3001
+API_PORT=4000
 ```
 
-Ensure EC2 security group allows inbound **3001** from Vercel (or `0.0.0.0/0` temporarily).
+Ensure EC2 security group allows inbound **4000** from Vercel (or `0.0.0.0/0` temporarily).
 
 Ensure database is seeded:
 
@@ -64,8 +65,8 @@ pnpm db:seed
 cd /opt/shirkat-gah
 # Update .env.production with CORS_ORIGINS
 bash deploy/scripts/deployment.sh
-curl http://13.233.16.121:3001/health
-curl -X POST http://13.233.16.121:3001/api/v1/auth/login \
+curl http://13.233.16.121:4000/health
+curl -X POST http://13.233.16.121:4000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@shirkatgah.org","password":"Admin@123456"}'
 ```

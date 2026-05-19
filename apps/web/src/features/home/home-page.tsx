@@ -89,7 +89,15 @@ const features = [
 export function HomePage() {
   const { data: cms, isLoading } = useQuery({
     queryKey: ['cms', 'homepage'],
-    queryFn: () => api.cms.homepage() as Promise<CmsHomepage>,
+    queryFn: async () => {
+      try {
+        return (await api.cms.homepage()) as CmsHomepage;
+      } catch {
+        return null;
+      }
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 
   const stats =

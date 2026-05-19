@@ -1,50 +1,96 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { getApiV1Url } from './api-config';
+import { getServerApiV1Url, logAuthDebug } from './api-config';
+
+/** Backend login response shape from NestJS POST /api/v1/auth/login */
+interface BackendLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn?: string;
+  user: {
+    id: string;
+    email: string;
+    roles?: string[];
+    permissions?: string[];
+  };
+}
+
+function parseLoginResponse(body: string): BackendLoginResponse | null {
+  try {
+    const data = JSON.parse(body) as BackendLoginResponse;
+    if (!data?.accessToken || !data?.user?.id || !data?.user?.email) {
+      logAuthDebug('Invalid login response shape:', body.slice(0, 300));
+      return null;
+    }
+    return data;
+  } catch {
+    logAuthDebug('Failed to parse login JSON:', body.slice(0, 300));
+    return null;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
+      id: 'credentials',
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          logAuthDebug('Missing email or password');
+          return null;
+        }
+
+        const email = credentials.email.trim().toLowerCase();
+        const password = credentials.password;
+        const loginUrl = getServerApiV1Url('/auth/login');
+
+        logAuthDebug('Login URL:', loginUrl);
+        logAuthDebug('BACKEND_URL:', process.env.BACKEND_URL ?? '(not set)');
+        logAuthDebug('NEXTAUTH_URL:', process.env.NEXTAUTH_URL ?? '(not set)');
 
         try {
-          // Server-side: call EC2 directly via BACKEND_URL (no mixed-content issue)
-          const res = await fetch(getApiV1Url('/auth/login', { serverSide: true }), {
+          const res = await fetch(loginUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            cache: 'no-store',
           });
 
+          const body = await res.text();
+          logAuthDebug('Response status:', res.status);
+          logAuthDebug('Response body:', body.slice(0, 500));
+
           if (!res.ok) {
-            if (process.env.NODE_ENV !== 'production') {
-              const body = await res.text();
-              console.error('[NextAuth] Login failed:', res.status, body);
-            }
             return null;
           }
 
-          const data = await res.json();
-          return {
+          const data = parseLoginResponse(body);
+          if (!data) {
+            return null;
+          }
+
+          const user = {
             id: data.user.id,
             email: data.user.email,
             name: data.user.email,
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
-            roles: data.user.roles,
-            permissions: data.user.permissions,
+            roles: data.user.roles ?? [],
+            permissions: data.user.permissions ?? [],
           };
+
+          logAuthDebug('Authorize success for:', user.email);
+          return user;
         } catch (error) {
-          console.error('[NextAuth] Login request error:', error);
+          logAuthDebug('Login fetch error:', error instanceof Error ? error.message : error);
           return null;
         }
       },
@@ -63,17 +109,17 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
-        token.roles = user.roles;
-        token.permissions = user.permissions;
+        token.roles = user.roles ?? [];
+        token.permissions = user.permissions ?? [];
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string;
-      session.user.id = token.id as string;
-      session.user.roles = token.roles as string[];
-      session.user.permissions = token.permissions as string[];
+      session.accessToken = (token.accessToken as string) ?? '';
+      session.user.id = (token.id as string) ?? '';
+      session.user.roles = (token.roles as string[]) ?? [];
+      session.user.permissions = (token.permissions as string[]) ?? [];
       return session;
     },
   },
@@ -100,4 +146,5 @@ export const authOptions: NextAuthOptions = {
       },
     },
   },
+  debug: process.env.AUTH_DEBUG === 'true',
 };

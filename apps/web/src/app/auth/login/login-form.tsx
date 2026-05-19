@@ -48,11 +48,18 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        toast.error('Invalid email or password');
-      } else {
+        console.error('[Login] NextAuth error:', result.error);
+        toast.error(
+          result.error === 'CredentialsSignin'
+            ? 'Invalid email or password'
+            : 'Authentication failed. Please try again.',
+        );
+      } else if (result?.ok) {
         toast.success('Welcome back!');
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        toast.error('Authentication failed. Please try again.');
       }
     } catch {
       toast.error('Login failed. Please try again.');
