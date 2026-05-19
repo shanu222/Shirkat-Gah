@@ -12,12 +12,25 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(compression());
+
+  const corsOrigins = config.get<string>('CORS_ORIGINS', '');
+  const allowedOrigins = [
+    config.get('NEXT_PUBLIC_APP_URL', 'http://localhost:3000'),
+    'http://localhost:3000',
+    ...corsOrigins.split(',').map((o) => o.trim()).filter(Boolean),
+  ];
+
   app.enableCors({
-    origin: [
-      config.get('NEXT_PUBLIC_APP_URL', 'http://localhost:3000'),
-      'http://localhost:3000',
-    ],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.some((o) => origin === o || origin.endsWith('.vercel.app'))) {
+        callback(null, true);
+      } else {
+        callback(null, allowedOrigins.includes(origin));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   app.setGlobalPrefix('api');
@@ -54,7 +67,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = config.get<number>('API_PORT', 4000);
+  const port = config.get<number>('API_PORT', process.env.NODE_ENV === 'production' ? 3001 : 4000);
   await app.listen(port);
   console.log(`🚀 Shirkat Gah API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);

@@ -108,15 +108,39 @@ pnpm dev
 
 Super Admin · Admin · Project Manager · Finance Officer · Data Entry Operator · Monitoring Officer · Trainer · Learner · Public User · Donor Viewer
 
-## Production Deployment
+## Production Deployment (Vercel + AWS)
+
+Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) · GitHub secrets: [docs/GITHUB_SECRETS.md](docs/GITHUB_SECRETS.md)
+
+| Component | Platform |
+|-----------|----------|
+| Frontend | **Vercel** (Edge Network, ISR, middleware) |
+| API | **AWS ECS Fargate** + ALB |
+| Database | **AWS RDS PostgreSQL 16** |
+| Cache/Queues | **AWS ElastiCache Redis** + BullMQ |
+| Files | **AWS S3** + **CloudFront CDN** |
+| Email | **AWS SES** |
+| IaC | **Terraform** in `infra/terraform/` |
+
+### Quick deploy
+
+**Vercel:** Import repo → root `apps/web` → set env from `apps/web/.env.production.example`
+
+**AWS:**
+```bash
+cd infra/terraform && cp terraform.tfvars.example terraform.tfvars
+terraform init && terraform apply
+```
+
+CI/CD: `.github/workflows/deploy-vercel.yml` + `.github/workflows/deploy-aws.yml`
+
+### Local Docker (development)
 
 ```bash
 docker compose up -d
 ```
 
-Set production environment variables in `.env` before deploying. Ensure `JWT_SECRET`, `NEXTAUTH_SECRET`, and database credentials are strong unique values.
-
-## API Documentation
+---
 
 Interactive Swagger documentation available at `/api/docs` when the API server is running.
 

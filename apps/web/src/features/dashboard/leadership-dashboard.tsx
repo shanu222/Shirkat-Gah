@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import {
   TrendingUp,
   Users,
@@ -13,12 +14,15 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLeadershipDashboard } from '@/hooks/use-dashboard';
 import {
   BarChart,
   Bar,
@@ -38,14 +42,26 @@ import {
 } from 'recharts';
 
 export function LeadershipDashboard() {
-  const kpis = [
+  const { status } = useSession();
+  const { data: apiData, isLoading, isError } = useLeadershipDashboard();
+
+  const defaultKpis = [
     { label: 'Total Beneficiaries', value: '152,450', change: '+12.5%', trend: 'up', icon: Users, color: 'from-emerald-500 to-teal-500' },
     { label: 'Active Projects', value: '45', change: '+3 new', trend: 'up', icon: Target, color: 'from-blue-500 to-cyan-500' },
     { label: 'Budget Utilization', value: '78%', change: '+5%', trend: 'up', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
     { label: 'Geographic Reach', value: '82 Districts', change: '+8', trend: 'up', icon: MapPin, color: 'from-purple-500 to-pink-500' },
   ];
 
-  const monthlyData = [
+  const kpis = apiData?.kpis
+    ? [
+        { label: 'Total Beneficiaries', value: apiData.kpis.totalBeneficiaries.toLocaleString(), change: '+12.5%', trend: 'up', icon: Users, color: 'from-emerald-500 to-teal-500' },
+        { label: 'Active Projects', value: String(apiData.kpis.activeProjects), change: `${apiData.kpis.totalProjects} total`, trend: 'up', icon: Target, color: 'from-blue-500 to-cyan-500' },
+        { label: 'Budget Utilization', value: `${apiData.kpis.budgetUtilization}%`, change: '+5%', trend: 'up', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
+        { label: 'Geographic Reach', value: `${apiData.kpis.geographicReach} Districts`, change: '+8', trend: 'up', icon: MapPin, color: 'from-purple-500 to-pink-500' },
+      ]
+    : defaultKpis;
+
+  const monthlyData = apiData?.monthlyTrend ?? [
     { month: 'Jan', beneficiaries: 12000, programs: 38, budget: 65 },
     { month: 'Feb', beneficiaries: 13500, programs: 40, budget: 68 },
     { month: 'Mar', beneficiaries: 14200, programs: 42, budget: 72 },
@@ -53,36 +69,69 @@ export function LeadershipDashboard() {
     { month: 'May', beneficiaries: 17100, programs: 45, budget: 78 },
   ];
 
-  const programData = [
+  const programData = apiData?.programDistribution?.length
+    ? apiData.programDistribution
+    : [
     { name: 'SRHR Advocacy', value: 35, color: '#047857' },
     { name: 'Women Empowerment', value: 30, color: '#0ea5e9' },
     { name: 'Governance', value: 20, color: '#14b8a6' },
     { name: 'Research', value: 15, color: '#f97316' },
   ];
 
-  const provinceData = [
+  const provinceData = apiData?.provinceData?.length
+    ? apiData.provinceData.map((p) => ({ province: p.province, projects: p.projects, reach: p.districts ?? p.reach ?? 0 }))
+    : [
     { province: 'Punjab', projects: 18, reach: 35000 },
     { province: 'Sindh', projects: 12, reach: 28000 },
     { province: 'KPK', projects: 10, reach: 22000 },
     { province: 'Balochistan', projects: 5, reach: 15000 },
   ];
 
-  const recentActivity = [
+  const projectHealth = apiData?.projectHealth ?? [
+    { name: 'On Track', value: 32, percentage: 71 },
+    { name: 'At Risk', value: 8, percentage: 18 },
+    { name: 'Delayed', value: 5, percentage: 11 },
+  ];
+
+  const recentActivity = apiData?.recentActivity?.length
+    ? apiData.recentActivity.map((a) => ({
+        title: `${a.action} — ${a.entity}`,
+        description: a.user,
+        time: new Date(a.time).toLocaleString(),
+        icon: a.action === 'LOGIN' ? CheckCircle2 : FileText,
+        color: 'text-emerald-500',
+      }))
+    : [
     { title: 'New project approved', description: 'Women Leadership Training - Lahore', time: '2 hours ago', icon: CheckCircle2, color: 'text-emerald-500' },
     { title: 'Report submitted', description: 'Q1 Impact Assessment completed', time: '5 hours ago', icon: FileText, color: 'text-blue-500' },
     { title: 'Milestone achieved', description: 'Reached 150K beneficiaries', time: '1 day ago', icon: Award, color: 'text-orange-500' },
     { title: 'Alert', description: 'Budget review needed for 3 projects', time: '2 days ago', icon: AlertCircle, color: 'text-amber-500' },
   ];
 
-  const projectHealth = [
-    { name: 'On Track', value: 32, percentage: 71 },
-    { name: 'At Risk', value: 8, percentage: 18 },
-    { name: 'Delayed', value: 5, percentage: 11 },
-  ];
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-36 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-96 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background py-6 sm:py-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        {isError && (
+          <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+            <Loader2 className="w-4 h-4" />
+            Live data unavailable — showing cached defaults. Ensure API is running.
+          </div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -2,14 +2,28 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@shirkat-gah/shared'],
+  poweredByHeader: false,
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: '**' },
+      { protocol: 'https', hostname: '**.amazonaws.com' },
+      { protocol: 'https', hostname: '**.cloudfront.net' },
+      { protocol: 'https', hostname: '**.vercel.app' },
       { protocol: 'http', hostname: 'localhost' },
     ],
+    formats: ['image/avif', 'image/webp'],
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-icons'],
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+        ],
+      },
+    ];
   },
 };
 

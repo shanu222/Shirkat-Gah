@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { LoginDto, RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 import { JwtPayload } from '@shirkat-gah/shared';
 
@@ -13,6 +14,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private email: EmailService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -105,7 +107,10 @@ export class AuthService {
       },
     });
 
-    // TODO: Send email via queue
+    const appUrl = this.config.get('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
+    const resetUrl = `${appUrl}/auth/reset-password?token=${token}`;
+    await this.email.sendPasswordReset(user.email, resetUrl, user.firstName);
+
     return { message: 'If the email exists, a reset link has been sent.' };
   }
 

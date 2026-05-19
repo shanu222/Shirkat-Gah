@@ -3,11 +3,19 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LmsService } from './lms.service';
 import { User } from '../../common/decorators/user.decorator';
 import { Public } from '../../common/decorators/auth.decorators';
+import type {
+  PaginatedResponse,
+  CourseListItem,
+  CourseDetailResponse,
+  EnrollmentItem,
+  EnrollmentRecord,
+  LessonProgressItem,
+} from '../../common/types';
 
 @ApiTags('lms')
 @Controller('lms')
 export class LmsController {
-  constructor(private lmsService: LmsService) {}
+  constructor(private readonly lmsService: LmsService) {}
 
   @Public()
   @Get('courses')
@@ -17,35 +25,38 @@ export class LmsController {
     @Query('limit') limit?: number,
     @Query('category') category?: string,
     @Query('search') search?: string,
-  ) {
+  ): Promise<PaginatedResponse<CourseListItem>> {
     return this.lmsService.getCourses({ page, limit, category, search });
   }
 
   @Public()
   @Get('courses/:slug')
   @ApiOperation({ summary: 'Get course details' })
-  getCourse(@Param('slug') slug: string) {
+  getCourse(@Param('slug') slug: string): Promise<CourseDetailResponse> {
     return this.lmsService.getCourse(slug);
   }
 
   @Post('courses/:courseId/enroll')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Enroll in a course' })
-  enroll(@User('sub') userId: string, @Param('courseId') courseId: string) {
+  enroll(@User('sub') userId: string, @Param('courseId') courseId: string): Promise<EnrollmentRecord> {
     return this.lmsService.enrollUser(userId, courseId);
   }
 
   @Get('my-learning')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user enrollments' })
-  myLearning(@User('sub') userId: string) {
+  myLearning(@User('sub') userId: string): Promise<EnrollmentItem[]> {
     return this.lmsService.getUserEnrollments(userId);
   }
 
   @Get('courses/:courseId/progress')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get lesson progress for course' })
-  progress(@User('sub') userId: string, @Param('courseId') courseId: string) {
+  progress(
+    @User('sub') userId: string,
+    @Param('courseId') courseId: string,
+  ): Promise<LessonProgressItem[]> {
     return this.lmsService.getLessonProgress(userId, courseId);
   }
 }

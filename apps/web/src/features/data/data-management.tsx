@@ -8,7 +8,7 @@ import {
   Search,
   Filter,
   FileText,
-  Image,
+  Image as ImageIcon,
   BarChart3,
   CheckCircle2,
   Clock,
@@ -25,7 +25,7 @@ export function DataManagement() {
   const dataCategories = [
     { label: 'Quantitative Data', count: 3450, icon: BarChart3, color: 'from-emerald-500 to-teal-500' },
     { label: 'Qualitative Data', count: 1240, icon: FileText, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Evidence Files', count: 890, icon: Image, color: 'from-purple-500 to-pink-500' },
+    { label: 'Evidence Files', count: 890, icon: ImageIcon, color: 'from-purple-500 to-pink-500' },
     { label: 'Financial Records', count: 567, icon: Database, color: 'from-orange-500 to-amber-500' },
   ];
 
@@ -220,7 +220,7 @@ export function DataManagement() {
                       <span className="text-sm">Qualitative Data</span>
                     </Button>
                     <Button variant="outline" className="h-24 flex-col">
-                      <Image className="w-6 h-6 mb-2" />
+                      <ImageIcon className="w-6 h-6 mb-2" aria-hidden="true" />
                       <span className="text-sm">Evidence Files</span>
                     </Button>
                   </div>
