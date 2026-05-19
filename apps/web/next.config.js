@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
 
+/** Direct EC2/backend URL — server-side only, never exposed to browser */
+const BACKEND_URL = (
+  process.env.BACKEND_URL ||
+  process.env.API_BACKEND_URL ||
+  'http://localhost:4000'
+).replace(/\/$/, '');
+
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@shirkat-gah/shared'],
@@ -18,6 +25,21 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-icons'],
+  },
+  /**
+   * Proxy browser API calls through Vercel (HTTPS) → EC2 backend (HTTP).
+   * Browser uses NEXT_PUBLIC_API_URL=/api/backend (same-origin, no mixed content).
+   * Example: /api/backend/api/v1/auth/login → http://EC2:3001/api/v1/auth/login
+   */
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/api/backend/:path*',
+          destination: `${BACKEND_URL}/:path*`,
+        },
+      ],
+    };
   },
   async headers() {
     return [

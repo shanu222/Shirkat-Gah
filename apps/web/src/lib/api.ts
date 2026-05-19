@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { getApiBaseUrl, getApiV1Url } from './api-config';
 
 export class ApiError extends Error {
   constructor(
@@ -26,9 +26,10 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}/api/v1${endpoint}`, {
+  const res = await fetch(getApiV1Url(endpoint), {
     ...rest,
     headers,
+    credentials: 'same-origin',
   });
 
   if (!res.ok) {
@@ -109,3 +110,6 @@ export const api = {
     },
   },
 };
+
+/** @deprecated Use getApiBaseUrl from api-config */
+export const API_BASE_URL = getApiBaseUrl();

@@ -77,17 +77,22 @@ async function bootstrap(): Promise<void> {
     ...corsOrigins.split(',').map((o) => o.trim()).filter(Boolean),
   ];
 
+  const isAllowedOrigin = (origin: string | undefined): boolean => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    if (origin.endsWith('.vercel.app')) return true;
+    return false;
+  };
+
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.some((o) => origin === o || origin.endsWith('.vercel.app'))) {
-        callback(null, true);
-      } else {
-        callback(null, allowedOrigins.includes(origin));
-      }
+      callback(null, isAllowedOrigin(origin));
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    maxAge: 86400,
   });
 
   app.setGlobalPrefix('api');
