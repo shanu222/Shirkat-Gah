@@ -1,17 +1,74 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import compression from 'compression';
 import helmet from 'helmet';
+import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+const logger = new Logger('Bootstrap');
+
+function resolvePort(config: ConfigService): number {
+  const apiPort = config.get<string>('API_PORT');
+  const port = config.get<string>('PORT');
+  const parsed = Number(apiPort ?? port);
+  if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  return process.env.NODE_ENV === 'production' ? 3001 : 4000;
+}
+
+function registerProcessHandlers(app: Awaited<ReturnType<typeof NestFactory.create>>): void {
+  process.on('uncaughtException', (error: Error) => {
+    logger.error(`Uncaught exception: ${error.message}`, error.stack);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason: unknown) => {
+    logger.error(`Unhandled rejection: ${String(reason)}`);
+  });
+
+  const shutdown = async (signal: string) => {
+    logger.log(`Received ${signal}, shutting down gracefully...`);
+    try {
+      await app.close();
+      process.exit(0);
+    } catch (error) {
+      logger.error('Error during shutdown', error instanceof Error ? error.stack : String(error));
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+}
+
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, {
+    logger: process.env.NODE_ENV === 'production'
+      ? ['error', 'warn', 'log']
+      : ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
+
+  registerProcessHandlers(app);
+  app.enableShutdownHooks();
+
   const config = app.get(ConfigService);
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  // Root health (no auth, no prefix) — used by load balancers / PM2 probes
+  expressApp.get('/health', (_req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
+  });
 
   app.use(helmet());
   app.use(compression());
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      logger.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+  });
 
   const corsOrigins = config.get<string>('CORS_ORIGINS', '');
   const allowedOrigins = [
@@ -50,27 +107,22 @@ async function bootstrap() {
     .setDescription('Enterprise digital platform API for Shirkat Gah')
     .setVersion('1.0')
     .addBearerAuth()
-    .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management')
-    .addTag('projects', 'Project management')
-    .addTag('dashboard', 'Dashboard analytics')
-    .addTag('finance', 'Financial management')
-    .addTag('lms', 'Learning management')
-    .addTag('reports', 'Reporting engine')
-    .addTag('cms', 'Content management')
-    .addTag('files', 'File management')
-    .addTag('notifications', 'Notifications')
-    .addTag('search', 'Global search')
-    .addTag('admin', 'Administration')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = config.get<number>('API_PORT', process.env.NODE_ENV === 'production' ? 3001 : 4000);
-  await app.listen(port);
-  console.log(`🚀 Shirkat Gah API running on http://localhost:${port}`);
-  console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
+  const host = config.get<string>('API_HOST', '0.0.0.0');
+  const port = resolvePort(config);
+
+  await app.listen(port, host);
+  logger.log(`Shirkat Gah API listening on http://${host}:${port}`);
+  logger.log(`Health: http://${host}:${port}/health`);
+  logger.log(`API health: http://${host}:${port}/api/health`);
+  logger.log(`Swagger: http://${host}:${port}/api/docs`);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  logger.error('Failed to start application', error instanceof Error ? error.stack : String(error));
+  process.exit(1);
+});

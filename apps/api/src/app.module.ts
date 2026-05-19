@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
@@ -23,7 +24,15 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../../.env', '.env'] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [
+        join(process.cwd(), '.env.production.local'),
+        join(process.cwd(), '.env.production'),
+        join(process.cwd(), '.env.local'),
+        join(process.cwd(), '.env'),
+      ],
+    }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     BullModule.forRoot({
       connection: {

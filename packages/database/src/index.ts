@@ -1,16 +1,24 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+/** Production-safe Prisma singleton (compiled to plain JS for Node runtime) */
+const globalForPrisma = globalThis as typeof globalThis & {
+  __shirkatGahPrisma?: PrismaClient;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+function createPrismaClient(): PrismaClient {
+  return new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error', 'warn'],
   });
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma: PrismaClient = globalForPrisma.__shirkatGahPrisma ?? createPrismaClient();
 
-export * from '@prisma/client';
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.__shirkatGahPrisma = prisma;
+}
+
 export { prisma as db };
+export * from '@prisma/client';

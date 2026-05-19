@@ -1,6 +1,12 @@
 # EC2 + PM2 + Nginx Production Deployment
 
-Target: **AWS EC2 Amazon Linux 2023** · API domain: **api.shirkatgah.org** · Frontend: **Vercel**
+Target: **AWS EC2 Amazon Linux 2023** · API: **api.shirkatgah.org** · Frontend: **Vercel**
+
+## Root Cause (Runtime Crash)
+
+The API built successfully but crashed under PM2 because `@shirkat-gah/database` pointed `main` at `./src/index.ts`. Node.js executed raw TypeScript at runtime (`globalThis as unknown as`, `export` syntax), which only works under `ts-node`/Nest watch — not in production.
+
+**Fix:** compile internal packages to `dist/*.js` and point `main`/`exports` at compiled output. Turbo build order: `database → shared → api → web`.
 
 ## Architecture
 
@@ -10,10 +16,25 @@ Vercel (Next.js)  ──HTTPS──▶  Nginx (EC2)  ──▶  PM2 Cluster (Nes
                     RDS PostgreSQL · Redis · S3
 ```
 
+## Build (required before PM2)
+
+```bash
+pnpm install
+pnpm db:generate
+pnpm build   # compiles database + shared + api + web
+```
+
+Verify artifacts:
+
+```bash
+test -f packages/database/dist/index.js
+test -f packages/shared/dist/index.js
+test -f apps/api/dist/main.js
+```
+
 ## First-Time Server Setup
 
 ```bash
-# On EC2 as root/sudo
 git clone https://github.com/shanu222/Shirkat-Gah.git /opt/shirkat-gah
 cd /opt/shirkat-gah
 bash deploy/scripts/setup-server.sh
@@ -23,8 +44,7 @@ bash deploy/scripts/setup-server.sh
 
 ```bash
 cp .env.production.example .env.production
-# Edit with RDS URL, JWT secrets, S3 bucket, CORS (Vercel URL)
-nano .env.production
+nano .env.production   # DATABASE_URL, JWT secrets, S3, CORS
 ln -sf .env.production .env
 ```
 
@@ -34,62 +54,58 @@ ln -sf .env.production .env
 bash deploy/scripts/deployment.sh
 ```
 
-This runs: `pnpm install` → `prisma generate` → `migrate deploy` → `pnpm build` → `pm2 start`
-
 ## PM2 Commands
 
 ```bash
+pm2 start ecosystem.config.js --env production
 pm2 status
 pm2 logs shirkat-gah-api
 pm2 restart shirkat-gah-api
-bash deploy/scripts/start.sh   # quick restart
+bash deploy/scripts/start.sh
 ```
 
-## Nginx
+PM2 runs from **repo root** with script `apps/api/dist/main.js`.
 
-Config: `deploy/nginx/api.shirkatgah.org.conf`
+## Health Checks
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /health` | Load balancer probe (no DB) |
+| `GET /api/health` | Version-neutral API probe |
+| `GET /api/v1/health` | Full check incl. database |
+
+```bash
+curl http://localhost:3001/health
+curl http://localhost:3001/api/v1/health
+```
+
+## Prisma
+
+```bash
+pnpm db:generate
+pnpm db:migrate:deploy
+pnpm db:seed   # optional demo data
+```
+
+## Nginx + SSL
 
 ```bash
 sudo cp deploy/nginx/api.shirkatgah.org.conf /etc/nginx/conf.d/
 sudo nginx -t && sudo systemctl reload nginx
-```
-
-Point DNS `api.shirkatgah.org` → EC2 elastic IP.
-
-## SSL (Let's Encrypt)
-
-```bash
-sudo dnf install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d api.shirkatgah.org
 ```
 
-## Health Check
-
-```bash
-curl https://api.shirkatgah.org/api/v1/health
-```
-
 ## Vercel Frontend
-
-Set in Vercel dashboard:
 
 | Variable | Value |
 |----------|-------|
 | `NEXT_PUBLIC_API_URL` | `https://api.shirkatgah.org` |
 | `NEXTAUTH_URL` | `https://app.shirkatgah.org` |
-| `NEXTAUTH_SECRET` | *(64 char secret)* |
+| `NEXTAUTH_SECRET` | 64-char secret |
 
 ## Docker Alternative
 
 ```bash
-docker compose --profile production up -d
+docker compose up -d postgres redis
+docker compose up -d api
 ```
-
-## Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| Build fails TS errors | Run `pnpm build` locally first; ensure Node 20+ |
-| PM2 crash loop | Check `pm2 logs`, verify `DATABASE_URL` |
-| 502 from Nginx | Confirm API on `:3001`, `curl localhost:3001/api/v1/health` |
-| CORS errors | Set `CORS_ORIGINS` to exact Vercel URL |

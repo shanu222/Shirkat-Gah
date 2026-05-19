@@ -5,8 +5,9 @@
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch",
-    "start": "node dist/main",
-    "start:prod": "node dist/main",
+    "start": "node dist/main.js",
+    "start:prod": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
