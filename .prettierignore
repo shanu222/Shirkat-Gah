@@ -1,0 +1,8 @@
+legacy/
+node_modules/
+dist/
+.next/
+.env
+.env.local
+*.log
+pnpm-lock.yaml
