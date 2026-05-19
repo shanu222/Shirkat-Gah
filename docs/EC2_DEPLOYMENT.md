@@ -61,18 +61,21 @@ bash deploy/scripts/deployment.sh
 
 ## Vercel Frontend
 
-**Root Directory:** `apps/web` (or repo root with root `vercel.json`)
+**Dashboard settings (recommended):**
 
-**Build command (auto via `apps/web/vercel.json`):**
-```bash
-cd ../.. && pnpm turbo run build --filter=@shirkat-gah/web
-```
+| Setting | Value |
+|---------|-------|
+| Root Directory | `apps/web` |
+| Framework Preset | Next.js |
+| Build Command | *(leave empty — Vercel auto-detects Turborepo)* |
+| Install Command | *(leave empty — Vercel auto-detects pnpm)* |
+| Output Directory | *(leave empty — Next.js default `.next`)* |
 
-This builds `@shirkat-gah/shared` first (via Turbo `^build` + explicit web dependency), then runs `next build`.
+Vercel climbs to the monorepo root for `pnpm install`, then runs `turbo run build` filtered to `@shirkat-gah/web`. Turbo builds `@shirkat-gah/shared` first via `dependsOn: ["^build"]`, then runs `next build` which outputs to `apps/web/.next`.
+
+Do **not** set custom `cd ../..` build commands or root-level `vercel.json` — they break `.next` output detection.
 
 **Required env vars:** `NEXT_PUBLIC_API_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
-
-Do **not** point `@shirkat-gah/shared` at `src/` — runtime uses `packages/shared/dist/index.js` only.
 
 ## PM2 Commands
 
