@@ -24,7 +24,9 @@
     "db:migrate": "pnpm --filter @shirkat-gah/database migrate:dev",
     "db:migrate:deploy": "pnpm --filter @shirkat-gah/database migrate:deploy",
     "db:push": "pnpm --filter @shirkat-gah/database push",
+    "db:reset": "pnpm --filter @shirkat-gah/database migrate:reset",
     "db:seed": "pnpm --filter @shirkat-gah/database seed",
+    "db:verify": "pnpm --filter @shirkat-gah/database verify",
     "db:studio": "pnpm --filter @shirkat-gah/database studio",
     "prepare": "husky"
   },

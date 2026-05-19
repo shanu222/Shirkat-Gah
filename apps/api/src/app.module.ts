@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
+import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -26,6 +27,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
       envFilePath: [
         join(process.cwd(), '.env.production.local'),
         join(process.cwd(), '.env.production'),

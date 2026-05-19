@@ -1,6 +1,14 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -10,6 +18,8 @@ import { JwtPayload } from '@shirkat-gah/shared';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
@@ -18,40 +28,63 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase() },
-      include: {
-        roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
-      },
-    });
-
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+    if (!this.prisma.isSchemaValid()) {
+      throw new ServiceUnavailableException(
+        'Authentication unavailable — database schema not initialized. Run reset-database.sh',
+      );
     }
 
-    const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: dto.email.toLowerCase() },
+        include: {
+          roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } },
+        },
+      });
 
-    if (user.status === 'SUSPENDED') throw new UnauthorizedException('Account suspended');
-    if (user.status === 'PENDING_VERIFICATION') {
-      throw new UnauthorizedException('Please verify your email first');
+      if (!user || !user.passwordHash) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const valid = await bcrypt.compare(dto.password, user.passwordHash);
+      if (!valid) throw new UnauthorizedException('Invalid credentials');
+
+      if (user.status === 'SUSPENDED') throw new UnauthorizedException('Account suspended');
+      if (user.status === 'PENDING_VERIFICATION') {
+        throw new UnauthorizedException('Please verify your email first');
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+      });
+
+      await this.prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'LOGIN',
+          entity: 'User',
+          entityId: user.id,
+        },
+      });
+
+      this.logger.log(`Login successful: ${user.email}`);
+      return this.generateTokens(user);
+    } catch (error) {
+      if (error instanceof UnauthorizedException || error instanceof ServiceUnavailableException) {
+        throw error;
+      }
+      if (error instanceof PrismaClientKnownRequestError) {
+        this.logger.error(`Login database error [${error.code}]: ${error.message}`);
+        if (error.code === 'P2021') {
+          throw new ServiceUnavailableException(
+            'Database schema incomplete — missing tables. Run: bash deploy/scripts/reset-database.sh',
+          );
+        }
+      }
+      this.logger.error('Login failed with unexpected error', error instanceof Error ? error.stack : String(error));
+      throw error;
     }
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    await this.prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'LOGIN',
-        entity: 'User',
-        entityId: user.id,
-      },
-    });
-
-    return this.generateTokens(user);
   }
 
   async register(dto: RegisterDto) {

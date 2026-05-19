@@ -21,10 +21,15 @@
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset --force",
     "push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
+    "verify": "tsx scripts/verify-schema.ts",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

@@ -35,8 +35,11 @@ dnf install -y redis6 || dnf install -y redis || true
 systemctl enable redis || systemctl enable redis6 || true
 systemctl start redis || systemctl start redis6 || true
 
-# PostgreSQL client (RDS is external)
-dnf install -y postgresql15
+# PostgreSQL (local on EC2 — run setup-postgres.sh after install)
+dnf install -y postgresql15-server postgresql15
+postgresql-setup --initdb 2>/dev/null || true
+systemctl enable postgresql
+systemctl start postgresql
 
 # Docker (optional — for containerized deploy)
 dnf install -y docker
@@ -70,5 +73,7 @@ fi
 
 echo "==> Setup complete. Next steps:"
 echo "  1. Clone repo to $APP_DIR"
-echo "  2. Copy .env.production to .env"
-echo "  3. Run: bash deploy/scripts/deployment.sh"
+echo "  2. sudo bash deploy/scripts/setup-postgres.sh"
+echo "  3. Copy .env.production (DATABASE_URL=postgresql://postgres@localhost:5432/shirkat_gah?schema=public)"
+echo "  4. bash deploy/scripts/reset-database.sh --yes"
+echo "  5. bash deploy/scripts/deployment.sh"
