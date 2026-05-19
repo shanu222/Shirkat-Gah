@@ -3,46 +3,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import {
-  LayoutDashboard,
-  Database,
-  GraduationCap,
-  DollarSign,
-  FileText,
-  Globe,
-  BarChart3,
-  Shield,
-  ChevronLeft,
-  Users,
-} from 'lucide-react';
+import { ChevronLeft, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-export const sidebarNavGroups = [
-  {
-    label: 'Overview',
-    items: [
-      { path: '/dashboard/leadership', label: 'Leadership', icon: BarChart3 },
-      { path: '/dashboard/projects', label: 'Projects', icon: LayoutDashboard },
-      { path: '/dashboard/public', label: 'Public Impact', icon: Globe },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { path: '/data', label: 'Data Management', icon: Database, auth: true },
-      { path: '/finance', label: 'Finance', icon: DollarSign, auth: true },
-      { path: '/reports', label: 'Reports', icon: FileText, auth: true },
-      { path: '/lms', label: 'Learning', icon: GraduationCap },
-    ],
-  },
-  {
-    label: 'Administration',
-    items: [{ path: '/admin', label: 'Admin', icon: Shield, roles: ['super_admin', 'admin'] }],
-  },
-];
+import {
+  filterNavItemsByRole,
+  sidebarNavGroups,
+  type NavItemConfig,
+} from '@/components/layout/nav-config';
 
 function NavItem({
   path,
@@ -53,7 +23,7 @@ function NavItem({
 }: {
   path: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: NavItemConfig['icon'];
   collapsed: boolean;
   onNavigate?: () => void;
 }) {
@@ -112,13 +82,7 @@ export function AppSidebar({ mobile, onNavigate }: AppSidebarProps) {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const isCollapsed = mobile ? false : collapsed;
-
-  const filterItem = (item: (typeof sidebarNavGroups)[0]['items'][0]) => {
-    if (item.roles && session?.user?.roles) {
-      return item.roles.some((r) => session.user.roles.includes(r));
-    }
-    return true;
-  };
+  const userRoles = session?.user?.roles;
 
   return (
     <TooltipProvider>
@@ -146,7 +110,7 @@ export function AppSidebar({ mobile, onNavigate }: AppSidebarProps) {
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 scrollbar-thin space-y-6">
           {sidebarNavGroups.map((group) => {
-            const items = group.items.filter(filterItem);
+            const items = filterNavItemsByRole(group.items, userRoles);
             if (items.length === 0) return null;
 
             return (
@@ -192,3 +156,5 @@ export function AppSidebar({ mobile, onNavigate }: AppSidebarProps) {
     </TooltipProvider>
   );
 }
+
+export { sidebarNavGroups } from '@/components/layout/nav-config';

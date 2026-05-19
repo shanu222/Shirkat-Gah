@@ -6,14 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import {
-  LayoutDashboard,
-  Database,
-  GraduationCap,
-  DollarSign,
-  FileText,
   Users,
-  Globe,
-  BarChart3,
   Menu,
   X,
   Moon,
@@ -22,7 +15,6 @@ import {
   Search,
   Settings,
   LogOut,
-  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,18 +23,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
-const navItems = [
-  { path: '/', label: 'Home', icon: Globe },
-  { path: '/dashboard/leadership', label: 'Leadership', icon: BarChart3, auth: true },
-  { path: '/dashboard/projects', label: 'Projects', icon: LayoutDashboard, auth: true },
-  { path: '/dashboard/public', label: 'Public Impact', icon: Globe },
-  { path: '/data', label: 'Data', icon: Database, auth: true },
-  { path: '/lms', label: 'Learning', icon: GraduationCap },
-  { path: '/finance', label: 'Finance', icon: DollarSign, auth: true },
-  { path: '/reports', label: 'Reports', icon: FileText, auth: true },
-  { path: '/admin', label: 'Admin', icon: Shield, roles: ['super_admin', 'admin'] },
-];
+import { filterNavItemsByRole, marketingNavItems } from '@/components/layout/nav-config';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -50,12 +31,7 @@ export function Navigation() {
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const filteredNav = navItems.filter((item) => {
-    if (item.roles && session?.user?.roles) {
-      return item.roles.some((r) => session.user.roles.includes(r));
-    }
-    return true;
-  });
+  const filteredNav = filterNavItemsByRole(marketingNavItems, session?.user?.roles);
 
   const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
     <>
