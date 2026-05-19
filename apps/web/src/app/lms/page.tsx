@@ -5,7 +5,7 @@ export const metadata = { title: 'Learning Management' };
 
 export default function LmsPage() {
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Learning">
       <LMSPage />
     </AppShell>
   );

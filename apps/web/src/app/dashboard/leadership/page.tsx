@@ -5,7 +5,7 @@ export const metadata = { title: 'Leadership Dashboard' };
 
 export default function LeadershipPage() {
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Leadership Dashboard">
       <LeadershipDashboard />
     </AppShell>
   );

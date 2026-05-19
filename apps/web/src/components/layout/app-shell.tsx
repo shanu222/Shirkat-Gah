@@ -1,27 +1,41 @@
 import { Navigation } from '@/components/layout/navigation';
+import { DashboardShell } from '@/components/layout/dashboard-shell';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+interface AppShellProps {
+  children: React.ReactNode;
+  /** Marketing pages use top nav; app pages use sidebar dashboard layout */
+  variant?: 'marketing' | 'dashboard';
+  title?: string;
+}
+
+export function AppShell({ children, variant = 'marketing', title }: AppShellProps) {
+  if (variant === 'dashboard') {
+    return <DashboardShell title={title}>{children}</DashboardShell>;
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col gradient-mesh">
       <Navigation />
-      <main className="flex-1">{children}</main>
-      <footer className="border-t border-border bg-muted/30 py-8 mt-auto">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+      <main id="main-content" className="flex-1 overflow-x-hidden" tabIndex={-1}>
+        {children}
+      </main>
+      <footer className="border-t border-border/80 bg-card/50 backdrop-blur-sm py-8 mt-auto">
+        <div className="page-container">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Shirkat Gah — Women&apos;s Resource Centre
             </p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="/dashboard/public" className="hover:text-primary transition-colors">
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground" aria-label="Footer">
+              <a href="/dashboard/public" className="hover:text-primary transition-colors focus-ring rounded-sm">
                 Public Dashboard
               </a>
-              <a href="/lms" className="hover:text-primary transition-colors">
+              <a href="/lms" className="hover:text-primary transition-colors focus-ring rounded-sm">
                 Learning
               </a>
-              <a href="/auth/login" className="hover:text-primary transition-colors">
+              <a href="/auth/login" className="hover:text-primary transition-colors focus-ring rounded-sm">
                 Portal Login
               </a>
-            </div>
+            </nav>
           </div>
         </div>
       </footer>

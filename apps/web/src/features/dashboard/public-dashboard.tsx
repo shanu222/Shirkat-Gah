@@ -1,10 +1,15 @@
 'use client';
 
+import { Users, MapPin, Award, BookOpen, Heart, Shield, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Users, Target, MapPin, Award, BookOpen, Heart, Shield, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { PageContainer, PageHeader } from '@/components/design-system/page-layout';
+import { KpiCard, KpiGrid } from '@/components/design-system/kpi-card';
+import { ChartCard } from '@/components/design-system/data-display';
+import { FadeIn } from '@/components/design-system/motion';
+import { CHART_COLORS, CHART_GRID_PROPS, CHART_TOOLTIP_STYLE } from '@/lib/chart-theme';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export function PublicDashboard() {
@@ -16,10 +21,10 @@ export function PublicDashboard() {
   ];
 
   const sdgData = [
-    { name: 'Gender Equality', value: 35, color: '#047857' },
-    { name: 'Good Health', value: 25, color: '#0ea5e9' },
-    { name: 'Quality Education', value: 20, color: '#14b8a6' },
-    { name: 'Peace & Justice', value: 20, color: '#f97316' },
+    { name: 'Gender Equality', value: 35, color: CHART_COLORS.primary },
+    { name: 'Good Health', value: 25, color: CHART_COLORS.secondary },
+    { name: 'Quality Education', value: 20, color: CHART_COLORS.accent },
+    { name: 'Peace & Justice', value: 20, color: CHART_COLORS.warning },
   ];
 
   const provinceData = [
@@ -44,166 +49,129 @@ export function PublicDashboard() {
     },
     {
       title: 'Policy Advocacy Success',
-      description: 'Influenced 5 provincial policies on women\'s rights',
+      description: "Influenced 5 provincial policies on women's rights",
       impact: '3 policies enacted',
       image: Award,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Public Impact Portal</Badge>
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              Our Impact Across Pakistan
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transforming lives through women empowerment, advocacy, and sustainable development programs
-            </p>
-          </div>
+    <PageContainer>
+      <FadeIn>
+        <PageHeader
+          title="Our Impact Across Pakistan"
+          description="Transforming lives through women empowerment, advocacy, and sustainable development programs"
+          badge={
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-medium">Public Impact Portal</Badge>
+          }
+        />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {impactStats.map((stat, index) => {
-              const Icon = stat.icon;
+        <KpiGrid className="mb-10">
+          {impactStats.map((stat) => (
+            <KpiCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} gradient={stat.color} trend="neutral" />
+          ))}
+        </KpiGrid>
+
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-10">
+          <ChartCard title="Geographic Reach" description="Beneficiaries by province">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={provinceData} barSize={36}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="province" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} />
+                <Bar dataKey="beneficiaries" fill={CHART_COLORS.primary} radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="SDG Alignment" description="Program distribution by Sustainable Development Goals">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={sdgData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {sdgData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip {...CHART_TOOLTIP_STYLE} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+
+        <section className="mb-10">
+          <PageHeader
+            title="Success Stories"
+            description="Real impact from our programs across Pakistan"
+            className="mb-6 text-center [&_h1]:text-2xl [&>div]:items-center [&>div>div]:items-center"
+          />
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+            {successStories.map((story, index) => {
+              const Icon = story.image;
               return (
                 <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  key={story.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: index * 0.08 }}
                 >
-                  <Card className="text-center hover:shadow-lg transition-shadow border-2">
-                    <CardContent className="pt-6">
-                      <div className={`w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-8 h-8 text-white" />
+                  <Card className="h-full surface-interactive text-center">
+                    <CardHeader>
+                      <div className="w-14 h-14 mx-auto mb-3 rounded-xl gradient-emerald flex items-center justify-center shadow-md">
+                        <Icon className="w-7 h-7 text-white" aria-hidden />
                       </div>
-                      <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                      <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      <CardTitle className="text-lg">{story.title}</CardTitle>
+                      <CardDescription>{story.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                        <TrendingUp className="w-3 h-3 mr-1" aria-hidden />
+                        {story.impact}
+                      </Badge>
                     </CardContent>
                   </Card>
                 </motion.div>
               );
             })}
           </div>
+        </section>
 
-          <div className="grid lg:grid-cols-2 gap-6 mb-12">
-            <Card className="border-2">
-              <CardHeader>
-                <CardTitle>Geographic Reach</CardTitle>
-                <CardDescription>Beneficiaries by province</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={provinceData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis dataKey="province" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="beneficiaries" fill="#047857" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2">
-              <CardHeader>
-                <CardTitle>SDG Alignment</CardTitle>
-                <CardDescription>Program distribution by Sustainable Development Goals</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={sdgData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {sdgData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">Success Stories</h2>
-              <p className="text-muted-foreground">Real impact from our programs across Pakistan</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {successStories.map((story, index) => {
-                const Icon = story.image;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                  >
-                    <Card className="h-full hover:shadow-lg transition-shadow border-2">
-                      <CardHeader>
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                          <Icon className="w-8 h-8 text-white" />
-                        </div>
-                        <CardTitle className="text-center text-lg">{story.title}</CardTitle>
-                        <CardDescription className="text-center">{story.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="text-center">
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                          <TrendingUp className="w-3 h-3 mr-1" />
-                          {story.impact}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-          <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Thematic Areas</CardTitle>
-              <CardDescription>Our core focus areas for sustainable impact</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { name: 'SRHR Advocacy', progress: 85 },
-                  { name: 'Women Empowerment', progress: 92 },
-                  { name: 'Governance', progress: 78 },
-                  { name: 'Research & Capacity', progress: 88 },
-                ].map((area, index) => (
-                  <div key={index}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm">{area.name}</span>
-                      <span className="text-sm text-muted-foreground">{area.progress}%</span>
-                    </div>
-                    <Progress value={area.progress} className="h-2" />
+        <Card className="surface-elevated bg-gradient-to-br from-emerald-50/80 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/10 border-emerald-500/10">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Thematic Areas</CardTitle>
+            <CardDescription>Our core focus areas for sustainable impact</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { name: 'SRHR Advocacy', progress: 85 },
+                { name: 'Women Empowerment', progress: 92 },
+                { name: 'Governance', progress: 78 },
+                { name: 'Research & Capacity', progress: 88 },
+              ].map((area) => (
+                <div key={area.name}>
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <span className="font-medium text-sm truncate">{area.name}</span>
+                    <span className="text-sm text-muted-foreground tabular-nums shrink-0">{area.progress}%</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
+                  <Progress value={area.progress} className="h-2" aria-label={`${area.name} progress`} />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </FadeIn>
+    </PageContainer>
   );
 }

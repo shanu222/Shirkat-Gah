@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import {
   Database,
   Upload,
@@ -20,6 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageContainer, PageHeader } from '@/components/design-system/page-layout';
+import { KpiCard, KpiGrid } from '@/components/design-system/kpi-card';
+import { FadeIn } from '@/components/design-system/motion';
 
 export function DataManagement() {
   const dataCategories = [
@@ -58,53 +60,37 @@ export function DataManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Data Management</h1>
-              <p className="text-muted-foreground">Centralized repository for project data, evidence, and indicators</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline">
+    <PageContainer>
+      <FadeIn>
+        <PageHeader
+          title="Data Management"
+          description="Centralized repository for project data, evidence, and indicators"
+          actions={
+            <>
+              <Button variant="outline" size="sm">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button size="sm" className="shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Entry
               </Button>
-            </div>
-          </div>
+            </>
+          }
+        />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {dataCategories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={category.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <Card className="hover:shadow-lg transition-shadow border-2">
-                    <CardContent className="pt-6">
-                      <div className={`w-12 h-12 mb-4 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-3xl font-bold text-foreground mb-1">{category.count}</div>
-                      <div className="text-sm text-muted-foreground">{category.label}</div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+        <KpiGrid className="mb-8">
+          {dataCategories.map((category) => (
+            <KpiCard
+              key={category.label}
+              label={category.label}
+              value={String(category.count)}
+              icon={category.icon}
+              gradient={category.color}
+              trend="neutral"
+            />
+          ))}
+        </KpiGrid>
 
           <Tabs defaultValue="recent" className="mb-8">
             <TabsList className="mb-6">
@@ -228,8 +214,7 @@ export function DataManagement() {
               </Card>
             </TabsContent>
           </Tabs>
-        </motion.div>
-      </div>
-    </div>
+      </FadeIn>
+    </PageContainer>
   );
 }

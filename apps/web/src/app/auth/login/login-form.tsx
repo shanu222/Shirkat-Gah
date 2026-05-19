@@ -7,12 +7,12 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { Users, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Users, Loader2, Eye, EyeOff, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/design-system/motion';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
@@ -62,45 +62,45 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
+    <div className="min-h-screen gradient-hero gradient-mesh flex items-center justify-center p-4 sm:p-6">
+      <FadeIn className="w-full max-w-[420px]">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-emerald rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Users className="w-8 h-8 text-white" />
+          <div className="w-14 h-14 gradient-emerald rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg ring-1 ring-white/20">
+            <Users className="w-7 h-7 text-white" aria-hidden />
           </div>
-          <h1 className="text-2xl font-bold">Shirkat Gah Platform</h1>
-          <p className="text-muted-foreground mt-1">Sign in to your account</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Shirkat Gah Platform</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Secure access for authorized personnel</p>
         </div>
 
-        <Card className="glass shadow-xl border-0">
-          <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
+        <Card className="glass shadow-xl border-border/50">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold">Welcome back</CardTitle>
             <CardDescription>Enter your credentials to access the platform</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email address</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@shirkatgah.org"
                   autoComplete="email"
+                  placeholder="admin@shirkatgah.org"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p id="email-error" className="text-sm text-destructive" role="alert">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                  <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline focus-ring rounded-sm">
                     Forgot password?
                   </Link>
                 </div>
@@ -108,15 +108,18 @@ export default function LoginForm() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
                     autoComplete="current-password"
+                    placeholder="••••••••"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? 'password-error' : undefined}
+                    className="pr-10"
                     {...register('password')}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
@@ -124,36 +127,38 @@ export default function LoginForm() {
                   </Button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                  <p id="password-error" className="text-sm text-destructive" role="alert">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
-              <Button type="submit" className="w-full gradient-emerald" disabled={loading}>
+              <Button type="submit" className="w-full gradient-emerald shadow-md h-10" disabled={loading}>
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Signing in...
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />
+                    Signing in…
                   </>
                 ) : (
-                  'Sign In'
+                  'Sign in'
                 )}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-6">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/register" className="text-primary hover:underline font-medium">
-                Register
+              <Link href="/auth/register" className="text-primary font-medium hover:underline focus-ring rounded-sm">
+                Request access
               </Link>
             </p>
-
-            <div className="mt-6 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Demo credentials:</p>
-              <p>admin@shirkatgah.org / Admin@123456</p>
-            </div>
           </CardContent>
         </Card>
-      </motion.div>
+
+        <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-6">
+          <Shield className="w-3.5 h-3.5" aria-hidden />
+          Enterprise-grade security · WCAG accessible
+        </p>
+      </FadeIn>
     </div>
   );
 }

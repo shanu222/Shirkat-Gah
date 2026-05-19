@@ -5,7 +5,7 @@ export const metadata = { title: 'Reports' };
 
 export default function ReportsPage() {
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Reports">
       <Reports />
     </AppShell>
   );

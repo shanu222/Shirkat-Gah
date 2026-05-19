@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { PageContainer, PageHeader } from '@/components/design-system/page-layout';
+import { FadeIn } from '@/components/design-system/motion';
 
 export function ProjectDashboard() {
   const projects = [
@@ -102,25 +104,20 @@ export function ProjectDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Project Dashboard</h1>
-              <p className="text-muted-foreground">Monitor and track project performance, KPIs, and milestones</p>
-            </div>
-            <Button className="bg-primary hover:bg-primary/90">
+    <PageContainer>
+      <FadeIn>
+        <PageHeader
+          title="Project Dashboard"
+          description="Monitor and track project performance, KPIs, and milestones"
+          actions={
+            <Button size="sm" className="shadow-sm">
               <Target className="w-4 h-4 mr-2" />
               New Project
             </Button>
-          </div>
+          }
+        />
 
-          <div className="grid grid-cols-1 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {projects.map((project, index) => (
               <motion.div
                 key={project.id}
@@ -128,7 +125,7 @@ export function ProjectDashboard() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                <Card className="border-2 hover:shadow-lg transition-shadow">
+                <Card className="surface-interactive">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -262,8 +259,7 @@ export function ProjectDashboard() {
               </motion.div>
             ))}
           </div>
-        </motion.div>
-      </div>
-    </div>
+      </FadeIn>
+    </PageContainer>
   );
 }

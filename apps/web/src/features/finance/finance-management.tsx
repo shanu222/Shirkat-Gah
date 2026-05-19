@@ -10,13 +10,18 @@ import {
   Upload,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageContainer, PageHeader } from '@/components/design-system/page-layout';
+import { KpiCard, KpiGrid } from '@/components/design-system/kpi-card';
+import { ChartCard, StatusBadge } from '@/components/design-system/data-display';
+import { FadeIn } from '@/components/design-system/motion';
+import { CHART_COLORS, CHART_GRID_PROPS, CHART_TOOLTIP_STYLE } from '@/lib/chart-theme';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export function FinanceManagement() {
@@ -59,94 +64,65 @@ export function FinanceManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" />Approved</Badge>;
+        return <StatusBadge status="success" icon={CheckCircle2}>Approved</StatusBadge>;
       case 'pending':
-        return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+        return <StatusBadge status="warning" icon={Clock}>Pending</StatusBadge>;
       case 'rejected':
-        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20"><AlertCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return <StatusBadge status="error" icon={AlertCircle}>Rejected</StatusBadge>;
       default:
         return <Badge>{status}</Badge>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Finance Management</h1>
-              <p className="text-muted-foreground">Budget tracking, donor management, and financial reporting</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline">
+    <PageContainer>
+      <FadeIn>
+        <PageHeader
+          title="Finance Management"
+          description="Budget tracking, donor management, and financial reporting"
+          actions={
+            <>
+              <Button variant="outline" size="sm">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button size="sm" className="shadow-sm">
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Budget
               </Button>
-            </div>
-          </div>
+            </>
+          }
+        />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {financialStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <Card className="hover:shadow-lg transition-shadow border-2">
-                    <CardContent className="pt-6">
-                      <div className={`w-12 h-12 mb-4 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
-                      <div className="text-sm text-muted-foreground">{stat.label}</div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+        <KpiGrid className="mb-8">
+          {financialStats.map((stat) => (
+            <KpiCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} gradient={stat.color} trend="neutral" />
+          ))}
+        </KpiGrid>
 
-          <Tabs defaultValue="overview" className="mb-8">
-            <TabsList className="mb-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="donors">Donor Budgets</TabsTrigger>
-              <TabsTrigger value="expenses">Expenses</TabsTrigger>
-              <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
+            <TabsTrigger value="donors" className="rounded-md">Donor Budgets</TabsTrigger>
+            <TabsTrigger value="expenses" className="rounded-md">Expenses</TabsTrigger>
+            <TabsTrigger value="transactions" className="rounded-md">Transactions</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="border-2">
-                  <CardHeader>
-                    <CardTitle>Monthly Expenditure</CardTitle>
-                    <CardDescription>Spending trends over time</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={monthlyExpenses}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => `PKR ${(value as number).toLocaleString()}`} />
-                        <Line type="monotone" dataKey="amount" stroke="#047857" strokeWidth={3} name="Amount" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+              <ChartCard title="Monthly Expenditure" description="Spending trends over time">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyExpenses}>
+                    <CartesianGrid {...CHART_GRID_PROPS} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value) => [`PKR ${(value as number).toLocaleString()}`, 'Amount']} />
+                    <Line type="monotone" dataKey="amount" stroke={CHART_COLORS.primary} strokeWidth={2.5} dot={{ r: 4 }} name="Amount" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-                <Card className="border-2">
+              <Card className="surface-elevated">
                   <CardHeader>
                     <CardTitle>Budget by Category</CardTitle>
                     <CardDescription>Allocated vs spent</CardDescription>
@@ -264,8 +240,7 @@ export function FinanceManagement() {
               </Card>
             </TabsContent>
           </Tabs>
-        </motion.div>
-      </div>
-    </div>
+      </FadeIn>
+    </PageContainer>
   );
 }

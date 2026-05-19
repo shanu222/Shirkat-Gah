@@ -105,7 +105,7 @@ export function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/40 via-transparent to-sky-100/40 dark:from-emerald-900/20 dark:to-sky-900/20" />
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 relative">
+        <div className="page-container py-16 sm:py-24 lg:py-32 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export function HomePage() {
 
       {/* Stats */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => (
@@ -180,7 +180,7 @@ export function HomePage() {
 
       {/* Features */}
       <section className="py-12 sm:py-20">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Integrated Platform Modules</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -199,7 +199,7 @@ export function HomePage() {
                   transition={{ delay: i * 0.05 }}
                 >
                   <Link href={feature.link}>
-                    <Card className="h-full hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer group">
+                    <Card className="h-full surface-interactive cursor-pointer group">
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -228,7 +228,7 @@ export function HomePage() {
 
       {/* Impact Areas */}
       <section className="py-12 sm:py-20 bg-muted/30">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <h2 className="text-3xl font-bold text-center mb-12">Impact Areas</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[

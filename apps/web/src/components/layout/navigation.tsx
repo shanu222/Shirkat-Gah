@@ -82,17 +82,17 @@ export function Navigation() {
   );
 
   return (
-    <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-border sticky top-0 z-50 shadow-sm">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
+      <div className="page-container">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-4 lg:gap-8">
-            <Link href="/" className="flex items-center gap-3 shrink-0">
-              <div className="w-10 h-10 gradient-emerald rounded-lg flex items-center justify-center shadow-md">
-                <Users className="w-6 h-6 text-white" />
+            <Link href="/" className="flex items-center gap-3 shrink-0 focus-ring rounded-lg">
+              <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center shadow-md ring-1 ring-white/20">
+                <Users className="w-5 h-5 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-semibold text-lg text-foreground leading-tight">Shirkat Gah</h1>
-                <p className="text-xs text-muted-foreground">Digital Platform</p>
+                <h1 className="font-semibold text-base text-foreground leading-tight tracking-tight">Shirkat Gah</h1>
+                <p className="text-[11px] text-muted-foreground">Digital Platform</p>
               </div>
             </Link>
 

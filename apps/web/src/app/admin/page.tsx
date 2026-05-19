@@ -37,7 +37,7 @@ export default function AdminPage() {
 
   if (!session) {
     return (
-      <AppShell>
+      <AppShell variant="dashboard" title="Admin">
         <div className="max-w-lg mx-auto py-20 text-center">
           <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Admin Access Required</h1>
@@ -51,7 +51,7 @@ export default function AdminPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Admin">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold flex items-center gap-3">

@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import {
   TrendingUp,
@@ -14,15 +13,17 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Sparkles,
   Loader2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeadershipDashboard } from '@/hooks/use-dashboard';
+import { PageContainer, PageHeader } from '@/components/design-system/page-layout';
+import { KpiCard, KpiGrid } from '@/components/design-system/kpi-card';
+import { AlertBanner, ChartCard, DashboardSkeleton } from '@/components/design-system/data-display';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/design-system/motion';
+import { CHART_COLORS, CHART_PALETTE, CHART_GRID_PROPS, CHART_TOOLTIP_STYLE } from '@/lib/chart-theme';
 import {
   BarChart,
   Bar,
@@ -38,7 +39,7 @@ import {
   Legend,
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
 } from 'recharts';
 
 export function LeadershipDashboard() {
@@ -46,18 +47,18 @@ export function LeadershipDashboard() {
   const { data: apiData, isLoading, isError } = useLeadershipDashboard();
 
   const defaultKpis = [
-    { label: 'Total Beneficiaries', value: '152,450', change: '+12.5%', trend: 'up', icon: Users, color: 'from-emerald-500 to-teal-500' },
-    { label: 'Active Projects', value: '45', change: '+3 new', trend: 'up', icon: Target, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Budget Utilization', value: '78%', change: '+5%', trend: 'up', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
-    { label: 'Geographic Reach', value: '82 Districts', change: '+8', trend: 'up', icon: MapPin, color: 'from-purple-500 to-pink-500' },
+    { label: 'Total Beneficiaries', value: '152,450', change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-emerald-500 to-teal-500' },
+    { label: 'Active Projects', value: '45', change: '+3 new', trend: 'up' as const, icon: Target, gradient: 'from-blue-500 to-cyan-500' },
+    { label: 'Budget Utilization', value: '78%', change: '+5%', trend: 'up' as const, icon: DollarSign, gradient: 'from-orange-500 to-amber-500' },
+    { label: 'Geographic Reach', value: '82 Districts', change: '+8', trend: 'up' as const, icon: MapPin, gradient: 'from-violet-500 to-purple-500' },
   ];
 
   const kpis = apiData?.kpis
     ? [
-        { label: 'Total Beneficiaries', value: apiData.kpis.totalBeneficiaries.toLocaleString(), change: '+12.5%', trend: 'up', icon: Users, color: 'from-emerald-500 to-teal-500' },
-        { label: 'Active Projects', value: String(apiData.kpis.activeProjects), change: `${apiData.kpis.totalProjects} total`, trend: 'up', icon: Target, color: 'from-blue-500 to-cyan-500' },
-        { label: 'Budget Utilization', value: `${apiData.kpis.budgetUtilization}%`, change: '+5%', trend: 'up', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
-        { label: 'Geographic Reach', value: `${apiData.kpis.geographicReach} Districts`, change: '+8', trend: 'up', icon: MapPin, color: 'from-purple-500 to-pink-500' },
+        { label: 'Total Beneficiaries', value: apiData.kpis.totalBeneficiaries.toLocaleString(), change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-emerald-500 to-teal-500' },
+        { label: 'Active Projects', value: String(apiData.kpis.activeProjects), change: `${apiData.kpis.totalProjects} total`, trend: 'up' as const, icon: Target, gradient: 'from-blue-500 to-cyan-500' },
+        { label: 'Budget Utilization', value: `${apiData.kpis.budgetUtilization}%`, change: '+5%', trend: 'up' as const, icon: DollarSign, gradient: 'from-orange-500 to-amber-500' },
+        { label: 'Geographic Reach', value: `${apiData.kpis.geographicReach} Districts`, change: '+8', trend: 'up' as const, icon: MapPin, gradient: 'from-violet-500 to-purple-500' },
       ]
     : defaultKpis;
 
@@ -72,20 +73,20 @@ export function LeadershipDashboard() {
   const programData = apiData?.programDistribution?.length
     ? apiData.programDistribution
     : [
-    { name: 'SRHR Advocacy', value: 35, color: '#047857' },
-    { name: 'Women Empowerment', value: 30, color: '#0ea5e9' },
-    { name: 'Governance', value: 20, color: '#14b8a6' },
-    { name: 'Research', value: 15, color: '#f97316' },
-  ];
+        { name: 'SRHR Advocacy', value: 35, color: CHART_COLORS.primary },
+        { name: 'Women Empowerment', value: 30, color: CHART_COLORS.secondary },
+        { name: 'Governance', value: 20, color: CHART_COLORS.accent },
+        { name: 'Research', value: 15, color: CHART_COLORS.warning },
+      ];
 
   const provinceData = apiData?.provinceData?.length
     ? apiData.provinceData.map((p) => ({ province: p.province, projects: p.projects, reach: p.districts ?? p.reach ?? 0 }))
     : [
-    { province: 'Punjab', projects: 18, reach: 35000 },
-    { province: 'Sindh', projects: 12, reach: 28000 },
-    { province: 'KPK', projects: 10, reach: 22000 },
-    { province: 'Balochistan', projects: 5, reach: 15000 },
-  ];
+        { province: 'Punjab', projects: 18, reach: 35000 },
+        { province: 'Sindh', projects: 12, reach: 28000 },
+        { province: 'KPK', projects: 10, reach: 22000 },
+        { province: 'Balochistan', projects: 5, reach: 15000 },
+      ];
 
   const projectHealth = apiData?.projectHealth ?? [
     { name: 'On Track', value: 32, percentage: 71 },
@@ -102,267 +103,204 @@ export function LeadershipDashboard() {
         color: 'text-emerald-500',
       }))
     : [
-    { title: 'New project approved', description: 'Women Leadership Training - Lahore', time: '2 hours ago', icon: CheckCircle2, color: 'text-emerald-500' },
-    { title: 'Report submitted', description: 'Q1 Impact Assessment completed', time: '5 hours ago', icon: FileText, color: 'text-blue-500' },
-    { title: 'Milestone achieved', description: 'Reached 150K beneficiaries', time: '1 day ago', icon: Award, color: 'text-orange-500' },
-    { title: 'Alert', description: 'Budget review needed for 3 projects', time: '2 days ago', icon: AlertCircle, color: 'text-amber-500' },
-  ];
+        { title: 'New project approved', description: 'Women Leadership Training - Lahore', time: '2 hours ago', icon: CheckCircle2, color: 'text-emerald-500' },
+        { title: 'Report submitted', description: 'Q1 Impact Assessment completed', time: '5 hours ago', icon: FileText, color: 'text-blue-500' },
+        { title: 'Milestone achieved', description: 'Reached 150K beneficiaries', time: '1 day ago', icon: Award, color: 'text-orange-500' },
+        { title: 'Alert', description: 'Budget review needed for 3 projects', time: '2 days ago', icon: AlertCircle, color: 'text-amber-500' },
+      ];
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
-            ))}
-          </div>
-          <Skeleton className="h-96 rounded-xl" />
-        </div>
-      </div>
+      <PageContainer>
+        <DashboardSkeleton />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-8">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+    <PageContainer>
+      <FadeIn>
         {isError && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
-            <Loader2 className="w-4 h-4" />
-            Live data unavailable — showing cached defaults. Ensure API is running.
-          </div>
+          <AlertBanner variant="warning" className="mb-6">
+            <Loader2 className="w-4 h-4 shrink-0 animate-spin mt-0.5" aria-hidden />
+            <span>Live data unavailable — showing cached defaults. Ensure API is running.</span>
+          </AlertBanner>
         )}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">Leadership Dashboard</h1>
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  <Activity className="w-3 h-3 mr-1" />
-                  Live
-                </Badge>
-              </div>
-              <p className="text-muted-foreground">Strategic overview of organizational impact and performance</p>
-            </div>
-            <Badge variant="outline" className="text-sm">
-              <Clock className="w-4 h-4 mr-1" />
+
+        <PageHeader
+          title="Leadership Dashboard"
+          description="Strategic overview of organizational impact and performance metrics"
+          badge={
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-medium">
+              <Activity className="w-3 h-3 mr-1" aria-hidden />
+              Live
+            </Badge>
+          }
+          actions={
+            <Badge variant="outline" className="text-sm font-normal tabular-nums">
+              <Clock className="w-4 h-4 mr-1.5" aria-hidden />
               Updated 5 min ago
             </Badge>
-          </div>
+          }
+        />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {kpis.map((kpi, index) => {
-              const Icon = kpi.icon;
-              return (
-                <motion.div
-                  key={kpi.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <Card className="hover:shadow-lg transition-shadow border-2">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${kpi.color} flex items-center justify-center shadow-lg`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <Badge variant="secondary" className="text-xs font-semibold">
-                          {kpi.change}
-                          <TrendingUp className="w-3 h-3 ml-1 inline" />
-                        </Badge>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground mb-1">{kpi.value}</div>
-                      <div className="text-sm text-muted-foreground">{kpi.label}</div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+        <StaggerContainer className="space-y-6 sm:space-y-8">
+          <StaggerItem>
+            <KpiGrid>
+              {kpis.map((kpi) => (
+                <KpiCard key={kpi.label} {...kpi} />
+              ))}
+            </KpiGrid>
+          </StaggerItem>
 
-          <Tabs defaultValue="overview" className="mb-8">
-            <TabsList className="mb-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="programs">Programs</TabsTrigger>
-              <TabsTrigger value="geographic">Geographic</TabsTrigger>
-              <TabsTrigger value="financial">Financial</TabsTrigger>
-            </TabsList>
+          <StaggerItem>
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 bg-muted/50 p-1">
+                <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
+                <TabsTrigger value="programs" className="rounded-md">Programs</TabsTrigger>
+                <TabsTrigger value="geographic" className="rounded-md">Geographic</TabsTrigger>
+                <TabsTrigger value="financial" className="rounded-md">Financial</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="border-2">
-                  <CardHeader>
-                    <CardTitle>Growth Trends</CardTitle>
-                    <CardDescription>Monthly beneficiary outreach and program growth</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+              <TabsContent value="overview" className="space-y-6 mt-0">
+                <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+                  <ChartCard title="Growth Trends" description="Monthly beneficiary outreach and program growth">
+                    <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Area type="monotone" dataKey="beneficiaries" stroke="#047857" fill="#047857" fillOpacity={0.2} name="Beneficiaries" />
+                        <CartesianGrid {...CHART_GRID_PROPS} />
+                        <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip {...CHART_TOOLTIP_STYLE} />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
+                        <Area type="monotone" dataKey="beneficiaries" stroke={CHART_COLORS.primary} fill={CHART_COLORS.primary} fillOpacity={0.15} name="Beneficiaries" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                  </ChartCard>
 
-                <Card className="border-2">
-                  <CardHeader>
-                    <CardTitle>Program Distribution</CardTitle>
-                    <CardDescription>Active programs by thematic area</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                  <ChartCard title="Program Distribution" description="Active programs by thematic area">
+                    <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={programData}
                           cx="50%"
                           cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
+                          innerRadius={55}
+                          outerRadius={90}
+                          paddingAngle={2}
                           dataKey="value"
+                          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                          labelLine={false}
                         >
                           {programData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                            <Cell key={`cell-${index}`} fill={entry.color ?? CHART_PALETTE[index % CHART_PALETTE.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip {...CHART_TOOLTIP_STYLE} />
                       </PieChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+                  </ChartCard>
+                </div>
 
-              <div className="grid lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 border-2">
-                  <CardHeader>
-                    <CardTitle>Project Health Status</CardTitle>
-                    <CardDescription>Current status of all active projects</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {projectHealth.map((status, index) => (
-                      <div key={status.name}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full ${
-                              status.name === 'On Track' ? 'bg-emerald-500' :
-                              status.name === 'At Risk' ? 'bg-amber-500' :
-                              'bg-red-500'
-                            }`} />
-                            <span className="font-medium">{status.name}</span>
+                <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
+                  <ChartCard
+                    className="lg:col-span-2"
+                    title="Project Health Status"
+                    description="Current status of all active projects"
+                    height={280}
+                  >
+                    <div className="space-y-5 pt-2">
+                      {projectHealth.map((item) => (
+                        <div key={item.name}>
+                          <div className="flex items-center justify-between mb-2 gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span
+                                className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                  item.name === 'On Track' ? 'bg-emerald-500' : item.name === 'At Risk' ? 'bg-amber-500' : 'bg-red-500'
+                                }`}
+                                aria-hidden
+                              />
+                              <span className="font-medium text-sm truncate">{item.name}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+                              {item.value} projects ({item.percentage}%)
+                            </span>
                           </div>
-                          <span className="text-sm text-muted-foreground">{status.value} projects ({status.percentage}%)</span>
+                          <Progress value={item.percentage} className="h-2" aria-label={`${item.name}: ${item.percentage}%`} />
                         </div>
-                        <Progress value={status.percentage} className="h-2" />
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+                      ))}
+                    </div>
+                  </ChartCard>
 
-                <Card className="border-2">
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Latest updates</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+                  <ChartCard title="Recent Activity" description="Latest platform updates" height={280}>
+                    <ul className="space-y-4 pt-1" role="list">
                       {recentActivity.map((activity, index) => {
                         const Icon = activity.icon;
                         return (
-                          <div key={index} className="flex gap-3">
-                            <div className={`w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 ${activity.color}`}>
-                              <Icon className="w-4 h-4" />
+                          <li key={index} className="flex gap-3">
+                            <div className={`w-8 h-8 rounded-lg bg-muted/80 flex items-center justify-center shrink-0 ${activity.color}`}>
+                              <Icon className="w-4 h-4" aria-hidden />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{activity.title}</p>
-                              <p className="text-xs text-muted-foreground">{activity.description}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                              <p className="text-sm font-medium truncate">{activity.title}</p>
+                              <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
+                              <p className="text-xs text-muted-foreground/80 mt-0.5">{activity.time}</p>
                             </div>
-                          </div>
+                          </li>
                         );
                       })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+                    </ul>
+                  </ChartCard>
+                </div>
+              </TabsContent>
 
-            <TabsContent value="programs">
-              <Card className="border-2">
-                <CardHeader>
-                  <CardTitle>Program Performance</CardTitle>
-                  <CardDescription>Comparison across thematic areas</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={programData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="value" fill="#047857" name="Active Programs" />
+              <TabsContent value="programs" className="mt-0">
+                <ChartCard title="Program Performance" description="Comparison across thematic areas" height={400}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={programData} barSize={32}>
+                      <CartesianGrid {...CHART_GRID_PROPS} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={60} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip {...CHART_TOOLTIP_STYLE} />
+                      <Bar dataKey="value" fill={CHART_COLORS.primary} name="Active Programs" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </ChartCard>
+              </TabsContent>
 
-            <TabsContent value="geographic">
-              <Card className="border-2">
-                <CardHeader>
-                  <CardTitle>Provincial Distribution</CardTitle>
-                  <CardDescription>Projects and beneficiary reach by province</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={provinceData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="province" />
-                      <YAxis yAxisId="left" />
-                      <YAxis yAxisId="right" orientation="right" />
-                      <Tooltip />
-                      <Legend />
-                      <Bar yAxisId="left" dataKey="projects" fill="#047857" name="Projects" />
-                      <Bar yAxisId="right" dataKey="reach" fill="#0ea5e9" name="Beneficiaries" />
+              <TabsContent value="geographic" className="mt-0">
+                <ChartCard title="Provincial Distribution" description="Projects and beneficiary reach by province" height={400}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={provinceData} barSize={28}>
+                      <CartesianGrid {...CHART_GRID_PROPS} />
+                      <XAxis dataKey="province" tick={{ fontSize: 12 }} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                      <Tooltip {...CHART_TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Bar yAxisId="left" dataKey="projects" fill={CHART_COLORS.primary} name="Projects" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="reach" fill={CHART_COLORS.secondary} name="Beneficiaries" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </ChartCard>
+              </TabsContent>
 
-            <TabsContent value="financial">
-              <Card className="border-2">
-                <CardHeader>
-                  <CardTitle>Budget Utilization Trend</CardTitle>
-                  <CardDescription>Monthly budget utilization percentage</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
+              <TabsContent value="financial" className="mt-0">
+                <ChartCard title="Budget Utilization Trend" description="Monthly budget utilization percentage" height={400}>
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="budget" stroke="#f97316" strokeWidth={3} name="Utilization %" />
+                      <CartesianGrid {...CHART_GRID_PROPS} />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip {...CHART_TOOLTIP_STYLE} />
+                      <Line type="monotone" dataKey="budget" stroke={CHART_COLORS.warning} strokeWidth={2.5} dot={{ r: 4 }} name="Utilization %" />
                     </LineChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </div>
-    </div>
+                </ChartCard>
+              </TabsContent>
+            </Tabs>
+          </StaggerItem>
+        </StaggerContainer>
+      </FadeIn>
+    </PageContainer>
   );
 }

@@ -5,7 +5,7 @@ export const metadata = { title: 'Data Management' };
 
 export default function DataPage() {
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Data Management">
       <DataManagement />
     </AppShell>
   );

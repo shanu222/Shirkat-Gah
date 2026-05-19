@@ -8,7 +8,7 @@ export const revalidate = 300;
 
 export default function PublicDashboardPage() {
   return (
-    <AppShell>
+    <AppShell variant="dashboard" title="Public Impact">
       <PublicDashboard />
     </AppShell>
   );
