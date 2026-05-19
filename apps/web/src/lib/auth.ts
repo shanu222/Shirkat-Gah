@@ -1,33 +1,16 @@
-import type { NextAuthOptions } from 'next-auth';
+import type { NextAuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { getServerApiV1Url, logAuthDebug } from './api-config';
+import {
+  attemptBackendLogin,
+  getAuthLoginUrls,
+  isValidLoginResponse,
+  logAuth,
+  logAuthError,
+} from './auth-login';
 
-/** Backend login response shape from NestJS POST /api/v1/auth/login */
-interface BackendLoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn?: string;
-  user: {
-    id: string;
-    email: string;
-    roles?: string[];
-    permissions?: string[];
-  };
-}
-
-function parseLoginResponse(body: string): BackendLoginResponse | null {
-  try {
-    const data = JSON.parse(body) as BackendLoginResponse;
-    if (!data?.accessToken || !data?.user?.id || !data?.user?.email) {
-      logAuthDebug('Invalid login response shape:', body.slice(0, 300));
-      return null;
-    }
-    return data;
-  } catch {
-    logAuthDebug('Failed to parse login JSON:', body.slice(0, 300));
-    return null;
-  }
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
+  logAuthError('NEXTAUTH_SECRET is not set — sessions will fail');
 }
 
 export const authOptions: NextAuthOptions = {
@@ -39,45 +22,46 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.password) {
-          logAuthDebug('Missing email or password');
+          logAuthError('Missing email or password in credentials');
           return null;
         }
 
         const email = credentials.email.trim().toLowerCase();
         const password = credentials.password;
-        const loginUrl = getServerApiV1Url('/auth/login');
 
-        logAuthDebug('Login URL:', loginUrl);
-        logAuthDebug('BACKEND_URL:', process.env.BACKEND_URL ?? '(not set)');
-        logAuthDebug('NEXTAUTH_URL:', process.env.NEXTAUTH_URL ?? '(not set)');
+        logAuth('BACKEND_URL', process.env.BACKEND_URL ?? '(not set)');
+        logAuth('NEXTAUTH_URL', process.env.NEXTAUTH_URL ?? '(not set)');
+        logAuth('Login attempt for', email);
 
-        try {
-          const res = await fetch(loginUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-            cache: 'no-store',
-          });
+        const urls = getAuthLoginUrls();
 
-          const body = await res.text();
-          logAuthDebug('Response status:', res.status);
-          logAuthDebug('Response body:', body.slice(0, 500));
+        for (const url of urls) {
+          logAuth('AUTH URL', url);
 
-          if (!res.ok) {
-            return null;
+          const attempt = await attemptBackendLogin(url, email, password);
+
+          logAuth('AUTH STATUS', attempt.status);
+          logAuth('AUTH BODY', attempt.data ?? attempt.error ?? '(empty)');
+
+          if (!attempt.ok) {
+            logAuthError('AUTH FAILED', {
+              url: attempt.url,
+              status: attempt.status,
+              body: attempt.data,
+            });
+            continue;
           }
 
-          const data = parseLoginResponse(body);
-          if (!data) {
-            return null;
+          const data = attempt.data;
+
+          if (!isValidLoginResponse(data)) {
+            logAuthError('INVALID AUTH RESPONSE', data);
+            continue;
           }
 
-          const user = {
+          const user: User = {
             id: data.user.id,
             email: data.user.email,
             name: data.user.email,
@@ -87,12 +71,12 @@ export const authOptions: NextAuthOptions = {
             permissions: data.user.permissions ?? [],
           };
 
-          logAuthDebug('Authorize success for:', user.email);
+          logAuth('Authorize success', { id: user.id, email: user.email });
           return user;
-        } catch (error) {
-          logAuthDebug('Login fetch error:', error instanceof Error ? error.message : error);
-          return null;
         }
+
+        logAuthError('All login URL attempts failed');
+        return null;
       },
     }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
