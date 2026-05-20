@@ -108,7 +108,7 @@ export default function AdminPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {data?.roles?.map((role) => (
-                        <div key={role.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div key={role.id} className="flex items-center justify-between p-3 rounded-lg glass-subtle">
                           <div>
                             <p className="font-medium">{role.name}</p>
                             <p className="text-sm text-muted-foreground">{role.slug}</p>
@@ -148,7 +148,7 @@ export default function AdminPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {data?.settings?.map((s) => (
-                        <div key={s.key} className="flex justify-between p-3 rounded-lg bg-muted/50">
+                        <div key={s.key} className="flex justify-between p-3 rounded-lg glass-subtle">
                           <span className="font-medium">{s.key}</span>
                           <Badge variant="outline">{s.category}</Badge>
                         </div>

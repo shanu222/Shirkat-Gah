@@ -96,7 +96,7 @@ export function AppSidebar({ mobile, onNavigate }: AppSidebarProps) {
       >
         <div className={cn('flex items-center h-16 border-b border-sidebar-border shrink-0', isCollapsed ? 'px-3 justify-center' : 'px-4 gap-3')}>
           <Link href="/" className="flex items-center gap-3 min-w-0 focus-ring rounded-lg" onClick={onNavigate}>
-            <div className="w-9 h-9 gradient-emerald rounded-lg flex items-center justify-center shadow-md shrink-0">
+            <div className="w-9 h-9 gradient-feminist rounded-lg flex items-center justify-center shadow-md shrink-0">
               <Users className="w-5 h-5 text-white" aria-hidden />
             </div>
             {!isCollapsed && (

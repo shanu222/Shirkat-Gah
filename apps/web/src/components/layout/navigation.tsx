@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { motion } from 'framer-motion';
 import {
   Users,
   Menu,
-  X,
   Moon,
   Sun,
   Bell,
@@ -18,11 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { filterNavItemsByRole, marketingNavItems } from '@/components/layout/nav-config';
 
 export function Navigation() {
@@ -30,6 +26,14 @@ export function Navigation() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const filteredNav = filterNavItemsByRole(marketingNavItems, session?.user?.roles);
 
@@ -39,18 +43,35 @@ export function Navigation() {
         const Icon = item.icon;
         const isActive = pathname === item.path;
         return (
-          <Link key={item.path} href={item.path} onClick={() => mobile && setMobileOpen(false)}>
-            <Button
-              variant={isActive ? 'secondary' : 'ghost'}
-              size="sm"
+          <Link
+            key={item.path}
+            href={item.path}
+            onClick={() => mobile && setMobileOpen(false)}
+            className={cn(
+              'relative group',
+              mobile ? 'block w-full' : 'inline-flex',
+            )}
+          >
+            <span
               className={cn(
-                mobile ? 'w-full justify-start gap-2' : 'gap-2 text-sm',
-                isActive && 'bg-primary/10 text-primary hover:bg-primary/20',
+                'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                mobile ? 'w-full' : '',
+                isActive
+                  ? 'text-fuchsia-200'
+                  : 'text-white/85 hover:text-white',
               )}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 shrink-0" />
               {item.label}
-            </Button>
+            </span>
+            {!mobile && (
+              <span
+                className={cn(
+                  'absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-gradient-to-r from-fuchsia-400 to-pink-400 transition-transform origin-left',
+                  isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
+                )}
+              />
+            )}
           </Link>
         );
       })}
@@ -58,17 +79,29 @@ export function Navigation() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className={cn(
+        'sticky top-0 z-50 transition-all duration-300',
+        scrolled
+          ? 'border-b border-white/15 bg-[rgba(15,8,25,0.72)] backdrop-blur-xl shadow-lg shadow-purple-950/20'
+          : 'border-b border-transparent bg-transparent',
+      )}
+    >
       <div className="page-container">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-4 lg:gap-8">
+        <div className="flex justify-between items-center h-16 lg:h-[4.25rem]">
+          <div className="flex items-center gap-4 lg:gap-10">
             <Link href="/" className="flex items-center gap-3 shrink-0 focus-ring rounded-lg">
-              <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center shadow-md ring-1 ring-white/20">
+              <div className="w-10 h-10 gradient-feminist rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/25">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-semibold text-base text-foreground leading-tight tracking-tight">Shirkat Gah</h1>
-                <p className="text-[11px] text-muted-foreground">Digital Platform</p>
+                <h1 className="font-bold text-base text-white leading-tight tracking-tight">
+                  Shirkat Gah
+                </h1>
+                <p className="text-[11px] text-white/60">Women&apos;s Resource Centre</p>
               </div>
             </Link>
 
@@ -79,12 +112,12 @@ export function Navigation() {
 
           <div className="hidden lg:flex items-center gap-2">
             <Link href="/search">
-              <Button variant="ghost" size="icon" aria-label="Search">
+              <Button variant="glass" size="icon" aria-label="Search">
                 <Search className="w-4 h-4" />
               </Button>
             </Link>
             <Button
-              variant="ghost"
+              variant="glass"
               size="icon"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label="Toggle theme"
@@ -94,22 +127,22 @@ export function Navigation() {
             </Button>
             {session ? (
               <>
-                <Button variant="ghost" size="icon" aria-label="Notifications">
+                <Button variant="glass" size="icon" aria-label="Notifications">
                   <Bell className="w-4 h-4" />
                 </Button>
                 <Link href="/admin">
-                  <Button variant="ghost" size="icon" aria-label="Settings">
+                  <Button variant="glass" size="icon" aria-label="Settings">
                     <Settings className="w-4 h-4" />
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm" onClick={() => signOut()} className="gap-2">
+                <Button variant="glass" size="sm" onClick={() => signOut()} className="gap-2">
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </Button>
               </>
             ) : (
               <Link href="/auth/login">
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
+                <Button size="sm" variant="hero">
                   Sign In
                 </Button>
               </Link>
@@ -118,30 +151,34 @@ export function Navigation() {
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" aria-label="Open menu">
-                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <Button variant="glass" size="icon" aria-label="Open menu">
+                <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-              <div className="flex flex-col gap-2 mt-8">
+            <SheetContent
+              side="right"
+              className="w-[min(100vw-2rem,320px)] glass border-white/20 bg-[rgba(15,8,25,0.92)] backdrop-blur-2xl"
+            >
+              <div className="flex flex-col gap-1 mt-10">
                 <NavLinks mobile />
-                <div className="border-t border-border pt-4 mt-4 flex flex-col gap-2">
-                  {session ? (
-                    <Button variant="outline" onClick={() => signOut()} className="gap-2">
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
+                <div className="section-divider my-6" />
+                {session ? (
+                  <Button variant="glass" onClick={() => signOut()} className="gap-2 w-full">
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Button>
+                ) : (
+                  <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
+                    <Button variant="hero" className="w-full">
+                      Sign In
                     </Button>
-                  ) : (
-                    <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
-                      <Button className="w-full bg-primary">Sign In</Button>
-                    </Link>
-                  )}
-                </div>
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }

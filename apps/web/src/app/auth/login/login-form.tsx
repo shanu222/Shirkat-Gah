@@ -69,17 +69,18 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen gradient-hero gradient-mesh flex items-center justify-center p-4 sm:p-6">
-      <FadeIn className="w-full max-w-[420px]">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative">
+      <div className="absolute inset-0 cinematic-overlay-strong pointer-events-none" aria-hidden />
+      <FadeIn className="w-full max-w-[420px] relative z-10">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 gradient-emerald rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg ring-1 ring-white/20">
+          <div className="w-14 h-14 gradient-feminist rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg ring-1 ring-white/25">
             <Users className="w-7 h-7 text-white" aria-hidden />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Shirkat Gah Platform</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Secure access for authorized personnel</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-cinematic">Shirkat Gah Platform</h1>
+          <p className="text-muted-cinematic mt-2 text-sm">Secure access for authorized personnel</p>
         </div>
 
-        <Card className="glass shadow-xl border-border/50">
+        <Card className="glass-card shadow-xl">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-semibold">Welcome back</CardTitle>
             <CardDescription>Enter your credentials to access the platform</CardDescription>
@@ -140,7 +141,7 @@ export default function LoginForm() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full gradient-emerald shadow-md h-10" disabled={loading}>
+              <Button type="submit" variant="hero" className="w-full h-10" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />

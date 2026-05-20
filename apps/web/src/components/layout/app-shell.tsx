@@ -19,13 +19,13 @@ export function AppShell({ children, variant = 'marketing', title }: AppShellPro
       <main id="main-content" className="flex-1 overflow-x-hidden" tabIndex={-1}>
         {children}
       </main>
-      <footer className="border-t border-border/80 bg-card/50 backdrop-blur-sm py-8 mt-auto">
+      <footer className="border-t border-white/15 glass-subtle backdrop-blur-xl py-10 mt-auto">
         <div className="page-container">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-cinematic">
               © {new Date().getFullYear()} Shirkat Gah — Women&apos;s Resource Centre
             </p>
-            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground" aria-label="Footer">
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-cinematic" aria-label="Footer">
               <a href="/dashboard/public" className="hover:text-primary transition-colors focus-ring rounded-sm">
                 Public Dashboard
               </a>

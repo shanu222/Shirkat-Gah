@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function LMSPage() {
   const stats = [
-    { label: 'Total Courses', value: '85', icon: BookOpen, color: 'from-emerald-500 to-teal-500' },
+    { label: 'Total Courses', value: '85', icon: BookOpen, color: 'from-fuchsia-500 to-pink-500' },
     { label: 'Active Learners', value: '3,240', icon: Users, color: 'from-blue-500 to-cyan-500' },
     { label: 'Certificates Issued', value: '1,890', icon: Award, color: 'from-purple-500 to-pink-500' },
     { label: 'Organizations', value: '45', icon: TrendingUp, color: 'from-orange-500 to-amber-500' },
@@ -216,7 +216,7 @@ export function LMSPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {courses.filter(c => c.progress > 0).map((course) => (
-                      <div key={course.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                      <div key={course.id} className="border rounded-lg p-4 hover:bg-white/5 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h4 className="font-medium text-foreground mb-1">{course.title}</h4>
@@ -244,7 +244,7 @@ export function LMSPage() {
                       {learningPath.map((module, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            module.completed ? 'bg-emerald-500' : 'bg-muted'
+                            module.completed ? 'bg-fuchsia-500' : 'bg-white/10'
                           }`}>
                             {module.completed && <Award className="w-4 h-4 text-white" />}
                           </div>

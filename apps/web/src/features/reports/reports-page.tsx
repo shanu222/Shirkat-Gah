@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function Reports() {
   const reportCategories = [
-    { label: 'Impact Reports', count: 45, icon: TrendingUp, color: 'from-emerald-500 to-teal-500' },
+    { label: 'Impact Reports', count: 45, icon: TrendingUp, color: 'from-fuchsia-500 to-pink-500' },
     { label: 'Financial Reports', count: 32, icon: DollarSign, color: 'from-blue-500 to-cyan-500' },
     { label: 'Project Reports', count: 28, icon: Target, color: 'from-purple-500 to-pink-500' },
     { label: 'Analytics', count: 18, icon: BarChart3, color: 'from-orange-500 to-amber-500' },
@@ -191,7 +191,7 @@ export function Reports() {
                 <CardContent>
                   <div className="space-y-4">
                     {recentReports.map((report) => (
-                      <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-white/5 transition-colors">
                         <div className="flex items-center gap-4 flex-1">
                           <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                             {getFormatIcon(report.format)}

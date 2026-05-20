@@ -23,7 +23,7 @@ export function KpiCard({
   change,
   trend = 'up',
   icon: Icon,
-  gradient = 'from-emerald-500 to-teal-500',
+  gradient = 'from-fuchsia-500 to-pink-500',
   className,
 }: KpiCardProps) {
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
@@ -48,7 +48,7 @@ export function KpiCard({
                 variant="secondary"
                 className={cn(
                   'text-xs font-medium tabular-nums shrink-0',
-                  trend === 'up' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+                  trend === 'up' && 'bg-fuchsia-500/15 text-fuchsia-200 border-fuchsia-400/25',
                   trend === 'down' && 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
                 )}
               >

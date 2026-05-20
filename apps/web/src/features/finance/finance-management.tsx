@@ -26,7 +26,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export function FinanceManagement() {
   const financialStats = [
-    { label: 'Total Budget', value: 'PKR 45.2M', icon: DollarSign, color: 'from-emerald-500 to-teal-500' },
+    { label: 'Total Budget', value: 'PKR 45.2M', icon: DollarSign, color: 'from-fuchsia-500 to-pink-500' },
     { label: 'Utilized', value: 'PKR 35.3M', icon: TrendingUp, color: 'from-blue-500 to-cyan-500' },
     { label: 'Remaining', value: 'PKR 9.9M', icon: PieChart, color: 'from-purple-500 to-pink-500' },
     { label: 'Pending Approvals', value: '12', icon: Clock, color: 'from-orange-500 to-amber-500' },
@@ -101,7 +101,7 @@ export function FinanceManagement() {
         </KpiGrid>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 bg-muted/50 p-1">
+          <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 glass-subtle p-1">
             <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
             <TabsTrigger value="donors" className="rounded-md">Donor Budgets</TabsTrigger>
             <TabsTrigger value="expenses" className="rounded-md">Expenses</TabsTrigger>
@@ -217,7 +217,7 @@ export function FinanceManagement() {
                 <CardContent>
                   <div className="space-y-4">
                     {recentTransactions.map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg hover:glass-subtle transition-colors">
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground mb-1">{transaction.description}</h4>
                           <div className="flex gap-3 text-sm text-muted-foreground">

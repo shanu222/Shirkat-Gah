@@ -47,7 +47,7 @@ export function LeadershipDashboard() {
   const { data: apiData, isLoading, isError } = useLeadershipDashboard();
 
   const defaultKpis = [
-    { label: 'Total Beneficiaries', value: '152,450', change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-emerald-500 to-teal-500' },
+    { label: 'Total Beneficiaries', value: '152,450', change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-fuchsia-500 to-pink-500' },
     { label: 'Active Projects', value: '45', change: '+3 new', trend: 'up' as const, icon: Target, gradient: 'from-blue-500 to-cyan-500' },
     { label: 'Budget Utilization', value: '78%', change: '+5%', trend: 'up' as const, icon: DollarSign, gradient: 'from-orange-500 to-amber-500' },
     { label: 'Geographic Reach', value: '82 Districts', change: '+8', trend: 'up' as const, icon: MapPin, gradient: 'from-violet-500 to-purple-500' },
@@ -55,7 +55,7 @@ export function LeadershipDashboard() {
 
   const kpis = apiData?.kpis
     ? [
-        { label: 'Total Beneficiaries', value: apiData.kpis.totalBeneficiaries.toLocaleString(), change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-emerald-500 to-teal-500' },
+        { label: 'Total Beneficiaries', value: apiData.kpis.totalBeneficiaries.toLocaleString(), change: '+12.5%', trend: 'up' as const, icon: Users, gradient: 'from-fuchsia-500 to-pink-500' },
         { label: 'Active Projects', value: String(apiData.kpis.activeProjects), change: `${apiData.kpis.totalProjects} total`, trend: 'up' as const, icon: Target, gradient: 'from-blue-500 to-cyan-500' },
         { label: 'Budget Utilization', value: `${apiData.kpis.budgetUtilization}%`, change: '+5%', trend: 'up' as const, icon: DollarSign, gradient: 'from-orange-500 to-amber-500' },
         { label: 'Geographic Reach', value: `${apiData.kpis.geographicReach} Districts`, change: '+8', trend: 'up' as const, icon: MapPin, gradient: 'from-violet-500 to-purple-500' },
@@ -155,7 +155,7 @@ export function LeadershipDashboard() {
 
           <StaggerItem>
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 bg-muted/50 p-1">
+              <TabsList className="w-full sm:w-auto h-auto flex flex-wrap gap-1 glass-subtle p-1">
                 <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
                 <TabsTrigger value="programs" className="rounded-md">Programs</TabsTrigger>
                 <TabsTrigger value="geographic" className="rounded-md">Geographic</TabsTrigger>

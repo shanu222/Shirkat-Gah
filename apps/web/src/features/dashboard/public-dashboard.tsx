@@ -14,7 +14,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export function PublicDashboard() {
   const impactStats = [
-    { label: 'Women Empowered', value: '152,450', icon: Users, color: 'from-emerald-500 to-teal-500' },
+    { label: 'Women Empowered', value: '152,450', icon: Users, color: 'from-fuchsia-500 to-pink-500' },
     { label: 'Communities Reached', value: '82', icon: MapPin, color: 'from-blue-500 to-cyan-500' },
     { label: 'Training Programs', value: '200+', icon: BookOpen, color: 'from-purple-500 to-pink-500' },
     { label: 'Policy Impacts', value: '25', icon: Award, color: 'from-orange-500 to-amber-500' },
@@ -128,7 +128,7 @@ export function PublicDashboard() {
                 >
                   <Card className="h-full surface-interactive text-center">
                     <CardHeader>
-                      <div className="w-14 h-14 mx-auto mb-3 rounded-xl gradient-emerald flex items-center justify-center shadow-md">
+                      <div className="w-14 h-14 mx-auto mb-3 rounded-xl gradient-feminist flex items-center justify-center shadow-md">
                         <Icon className="w-7 h-7 text-white" aria-hidden />
                       </div>
                       <CardTitle className="text-lg">{story.title}</CardTitle>
@@ -147,7 +147,7 @@ export function PublicDashboard() {
           </div>
         </section>
 
-        <Card className="surface-elevated bg-gradient-to-br from-emerald-50/80 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/10 border-emerald-500/10">
+        <Card className="glass-card border-fuchsia-400/20">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">Thematic Areas</CardTitle>
             <CardDescription>Our core focus areas for sustainable impact</CardDescription>

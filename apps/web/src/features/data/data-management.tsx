@@ -26,7 +26,7 @@ import { FadeIn } from '@/components/design-system/motion';
 
 export function DataManagement() {
   const dataCategories = [
-    { label: 'Quantitative Data', count: 3450, icon: BarChart3, color: 'from-emerald-500 to-teal-500' },
+    { label: 'Quantitative Data', count: 3450, icon: BarChart3, color: 'from-fuchsia-500 to-pink-500' },
     { label: 'Qualitative Data', count: 1240, icon: FileText, color: 'from-blue-500 to-cyan-500' },
     { label: 'Evidence Files', count: 890, icon: ImageIcon, color: 'from-purple-500 to-pink-500' },
     { label: 'Financial Records', count: 567, icon: Database, color: 'from-orange-500 to-amber-500' },
@@ -122,7 +122,7 @@ export function DataManagement() {
                 <CardContent>
                   <div className="space-y-4">
                     {recentEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-white/5 transition-colors">
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground mb-1">{entry.title}</h4>
                           <div className="flex gap-3 text-sm text-muted-foreground">

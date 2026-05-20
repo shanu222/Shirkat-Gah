@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -18,12 +20,35 @@ import {
   Heart,
   Award,
   ArrowRight,
+  ChevronDown,
+  Handshake,
+  Megaphone,
+  Scale,
+  FileText,
+  Download,
+  Eye,
+  X,
+  ZoomIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  CinematicAtmosphere,
+  GlassCard,
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+  AnimatedCounter,
+} from '@/components/design-system';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 interface CmsStat {
   label: string;
@@ -35,10 +60,37 @@ interface CmsHomepage {
 }
 
 const defaultStats = [
-  { label: 'Women Empowered', value: '150K+', icon: Users, color: 'from-emerald-500 to-teal-500' },
-  { label: 'Active Projects', value: '45+', icon: Target, color: 'from-blue-500 to-cyan-500' },
-  { label: 'Training Programs', value: '200+', icon: BookOpen, color: 'from-teal-500 to-cyan-500' },
-  { label: 'Districts Covered', value: '80+', icon: MapPin, color: 'from-orange-500 to-amber-500' },
+  { label: 'Women Empowered', value: 150000, suffix: '+', icon: Users, color: 'from-fuchsia-500 to-pink-500' },
+  { label: 'Active Projects', value: 45, suffix: '+', icon: Target, color: 'from-purple-500 to-violet-500' },
+  { label: 'Training Programs', value: 200, suffix: '+', icon: BookOpen, color: 'from-pink-500 to-rose-500' },
+  { label: 'Districts Covered', value: 80, suffix: '+', icon: MapPin, color: 'from-fuchsia-600 to-purple-500' },
+];
+
+const howWeWork = [
+  {
+    icon: Handshake,
+    title: 'Community Partnership',
+    description:
+      'We work alongside women-led groups and grassroots networks to co-design programs rooted in lived experience.',
+  },
+  {
+    icon: Megaphone,
+    title: 'Advocacy & Voice',
+    description:
+      'Amplifying women\'s voices through campaigns, policy dialogue, and public awareness on rights and equality.',
+  },
+  {
+    icon: Scale,
+    title: 'Rights & Justice',
+    description:
+      'Legal literacy, SRHR advocacy, and support systems that help women claim dignity, safety, and autonomy.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Research & Learning',
+    description:
+      'Evidence-based research, publications, and capacity building that inform practice and influence policy.',
+  },
 ];
 
 const features = [
@@ -86,7 +138,45 @@ const features = [
   },
 ];
 
+const galleryItems = [
+  { id: 1, title: 'Community Art & Voice', position: 'center 30%' },
+  { id: 2, title: 'Women\'s Collective', position: 'center 45%' },
+  { id: 3, title: 'Grassroots Leadership', position: 'left center' },
+  { id: 4, title: 'Training & Empowerment', position: 'right center' },
+  { id: 5, title: 'Advocacy in Action', position: 'center 60%' },
+  { id: 6, title: 'Solidarity & Strength', position: 'center 20%' },
+];
+
+const publications = [
+  {
+    title: 'Women\'s Rights in Pakistan: Policy Brief 2024',
+    type: 'Policy Brief',
+    year: '2024',
+    pages: '48',
+  },
+  {
+    title: 'SRHR Advocacy Toolkit',
+    type: 'Toolkit',
+    year: '2023',
+    pages: '72',
+  },
+  {
+    title: 'Grassroots Governance & Participation',
+    type: 'Research Report',
+    year: '2023',
+    pages: '96',
+  },
+  {
+    title: 'Economic Empowerment Pathways',
+    type: 'Publication',
+    year: '2022',
+    pages: '64',
+  },
+];
+
 export function HomePage() {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
   const { data: cms, isLoading } = useQuery({
     queryKey: ['cms', 'homepage'],
     queryFn: async () => {
@@ -101,159 +191,341 @@ export function HomePage() {
   });
 
   const stats =
-    (cms?.page?.content as { stats?: typeof defaultStats })?.stats?.map((s, i) => ({
-      ...defaultStats[i],
-      ...s,
-      icon: defaultStats[i]?.icon ?? Users,
-      color: defaultStats[i]?.color ?? 'from-emerald-500 to-teal-500',
-    })) ?? defaultStats;
+    (cms?.page?.content as { stats?: { label: string; value: string }[] })?.stats?.map((s, i) => {
+      const base = defaultStats[i] ?? defaultStats[0];
+      const num = parseInt(s.value.replace(/\D/g, ''), 10) || base.value;
+      return { ...base, label: s.label ?? base.label, value: num };
+    }) ?? defaultStats;
 
   return (
-    <div className="gradient-hero">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/40 via-transparent to-sky-100/40 dark:from-emerald-900/20 dark:to-sky-900/20" />
-        <div className="page-container py-16 sm:py-24 lg:py-32 relative">
+    <div className="relative">
+      {/* ─── Cinematic Hero ─────────────────────────────────────────────────── */}
+      <section className="relative min-h-[100dvh] flex flex-col justify-center overflow-hidden parallax-bg">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-fixed"
+          style={{ backgroundImage: "url('/platform-background.png')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 cinematic-overlay-strong" aria-hidden />
+        <CinematicAtmosphere />
+
+        <div className="page-container relative z-10 py-24 sm:py-32 lg:py-40">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl"
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-4xl mx-auto text-center"
           >
-            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 gap-1">
-              <Sparkles className="w-3 h-3" />
-              Enterprise Digital Platform
+            <Badge className="mb-6 glass-subtle text-fuchsia-200 border-fuchsia-400/30 gap-1.5 px-4 py-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              Hamari Awaaz, Hamari Taqat
             </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-on-cinematic leading-[1.1] mb-6 text-balance">
               Empowering Women,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-                Transforming Communities
-              </span>
+              <span className="gradient-hero-text">Transforming Communities</span>
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-              Integrated platform for impact measurement, learning management, financial governance,
-              and public transparency — built for international development standards.
+            <p className="text-lg sm:text-xl text-muted-cinematic mb-10 max-w-2xl mx-auto leading-relaxed">
+              A premium digital home for feminist advocacy, humanitarian impact, learning, and
+              transparent governance — rooted in grassroots authenticity.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/dashboard/leadership">
-                <Button size="lg" className="w-full sm:w-auto gap-2 gradient-emerald shadow-lg">
-                  Explore Dashboard
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard/public">
+                <Button size="lg" variant="hero" className="w-full sm:w-auto gap-2 px-8">
+                  Explore Our Impact
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link href="/dashboard/public">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  View Public Impact
+              <Link href="#how-we-work">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 text-white border-white/30">
+                  How We Work
                 </Button>
               </Link>
             </div>
           </motion.div>
         </div>
+
+        <a
+          href="#impact-stats"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors z-10"
+          aria-label="Scroll to content"
+        >
+          <span className="text-xs tracking-widest uppercase">Scroll</span>
+          <ChevronDown className="w-6 h-6 animate-scroll-hint" />
+        </a>
       </section>
 
-      {/* Stats */}
-      <section className="py-12 sm:py-16">
+      <div className="section-divider mx-auto max-w-3xl my-4" />
+
+      {/* ─── Impact Stats ───────────────────────────────────────────────────── */}
+      <section id="impact-stats" className="py-16 sm:py-24 relative">
         <div className="page-container">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <ScrollReveal className="text-center mb-12">
+            <h2 className="text-on-cinematic mb-3">Our Impact at a Glance</h2>
+            <p className="text-muted-cinematic max-w-xl mx-auto">
+              Decades of feminist leadership, measurable change, and community-rooted action
+            </p>
+          </ScrollReveal>
+          <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-32 rounded-xl" />
+                  <Skeleton key={i} className="h-36 rounded-2xl glass" />
                 ))
               : stats.map((stat, i) => {
                   const Icon = stat.icon;
                   return (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <Card className="glass border-0 shadow-lg hover:shadow-xl transition-shadow">
+                    <StaggerItem key={stat.label}>
+                      <GlassCard interactive glow float className="h-full">
                         <CardContent className="p-6">
                           <div
-                            className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4`}
+                            className={cn(
+                              'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center mb-4 shadow-lg',
+                              stat.color,
+                            )}
                           >
                             <Icon className="w-6 h-6 text-white" />
                           </div>
-                          <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-                          <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                          <p className="text-2xl sm:text-3xl font-bold text-on-cinematic tabular-nums">
+                            <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                          </p>
+                          <p className="text-sm text-muted-cinematic mt-1">{stat.label}</p>
                         </CardContent>
-                      </Card>
-                    </motion.div>
+                      </GlassCard>
+                    </StaggerItem>
                   );
                 })}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-12 sm:py-20">
+      {/* ─── How We Work ────────────────────────────────────────────────────── */}
+      <section id="how-we-work" className="py-16 sm:py-24 relative">
         <div className="page-container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Integrated Platform Modules</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              One unified ecosystem connecting data, finance, learning, and public engagement
+          <ScrollReveal className="text-center mb-14">
+            <h2 className="text-on-cinematic mb-3">How We Work</h2>
+            <p className="text-muted-cinematic max-w-2xl mx-auto">
+              Human-centered, participatory, and fiercely committed to women&apos;s rights
             </p>
-          </div>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {features.map((feature, i) => {
-              const Icon = feature.icon;
+          </ScrollReveal>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
+            {howWeWork.map((item, i) => {
+              const Icon = item.icon;
               return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Link href={feature.link}>
-                    <Card className="h-full surface-interactive cursor-pointer group">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                            <Icon className="w-6 h-6 text-primary" />
-                          </div>
-                          <Badge variant="outline">{feature.badge}</Badge>
-                        </div>
-                        <CardTitle className="text-xl mt-4">{feature.title}</CardTitle>
-                        <CardDescription className="text-base leading-relaxed">
-                          {feature.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <span className="text-primary text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
-                          Access module <ArrowRight className="w-4 h-4" />
-                        </span>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
+                <ScrollReveal key={item.title} delay={i * 0.08}>
+                  <GlassCard interactive glow className="h-full">
+                    <CardContent className="p-6 flex flex-col h-full min-h-[220px]">
+                      <div className="w-14 h-14 rounded-2xl gradient-feminist flex items-center justify-center mb-5 shadow-lg floating-gentle">
+                        <Icon className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-on-cinematic mb-2">{item.title}</h3>
+                      <p className="text-sm text-muted-cinematic leading-relaxed flex-1">
+                        {item.description}
+                      </p>
+                    </CardContent>
+                  </GlassCard>
+                </ScrollReveal>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Impact Areas */}
-      <section className="py-12 sm:py-20 bg-muted/30">
+      <div className="section-divider mx-auto max-w-3xl" />
+
+      {/* ─── Platform Modules ───────────────────────────────────────────────── */}
+      <section className="py-16 sm:py-24">
         <div className="page-container">
-          <h2 className="text-3xl font-bold text-center mb-12">Impact Areas</h2>
+          <ScrollReveal className="text-center mb-14">
+            <h2 className="text-on-cinematic mb-3">Integrated Platform</h2>
+            <p className="text-muted-cinematic max-w-2xl mx-auto">
+              One unified ecosystem connecting data, finance, learning, and public engagement
+            </p>
+          </ScrollReveal>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <ScrollReveal key={feature.title} delay={i * 0.05}>
+                  <Link href={feature.link}>
+                    <GlassCard interactive className="h-full group">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="w-12 h-12 rounded-xl bg-fuchsia-500/20 flex items-center justify-center group-hover:bg-fuchsia-500/30 transition-colors">
+                            <Icon className="w-6 h-6 text-fuchsia-300" />
+                          </div>
+                          <Badge variant="outline" className="border-white/25 text-fuchsia-200">
+                            {feature.badge}
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-xl mt-4 text-on-cinematic">{feature.title}</CardTitle>
+                        <CardDescription className="text-base text-muted-cinematic leading-relaxed">
+                          {feature.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <span className="text-fuchsia-300 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                          Access module <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </CardContent>
+                    </GlassCard>
+                  </Link>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Gallery ────────────────────────────────────────────────────────── */}
+      <section id="gallery" className="py-16 sm:py-24">
+        <div className="page-container">
+          <ScrollReveal className="text-center mb-14">
+            <h2 className="text-on-cinematic mb-3">Moments of Solidarity</h2>
+            <p className="text-muted-cinematic max-w-2xl mx-auto">
+              Cinematic glimpses of our community, advocacy, and collective strength
+            </p>
+          </ScrollReveal>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 auto-rows-[180px] sm:auto-rows-[220px]">
+            {galleryItems.map((item, i) => (
+              <ScrollReveal
+                key={item.id}
+                delay={i * 0.06}
+                className={cn(
+                  i === 0 && 'md:col-span-2 md:row-span-2 md:auto-rows-fr',
+                  i === 3 && 'md:row-span-2',
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setLightboxIndex(i)}
+                  className={cn(
+                    'group relative w-full h-full min-h-[180px] rounded-2xl overflow-hidden glass-card-interactive border-0 p-0 text-left',
+                    i === 0 && 'md:min-h-[460px]',
+                  )}
+                >
+                  <Image
+                    src="/platform-background.png"
+                    alt={item.title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    style={{ objectPosition: item.position }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgba(15,5,25,0.85)] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
+                    <p className="text-on-cinematic font-semibold text-sm sm:text-base">{item.title}</p>
+                    <ZoomIn className="w-5 h-5 text-white/70 group-hover:text-white shrink-0" />
+                  </div>
+                </button>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Dialog open={lightboxIndex !== null} onOpenChange={() => setLightboxIndex(null)}>
+        <DialogContent className="max-w-4xl glass border-white/20 p-0 overflow-hidden bg-[rgba(15,8,25,0.95)]">
+          <DialogTitle className="sr-only">
+            {lightboxIndex !== null ? galleryItems[lightboxIndex]?.title : 'Gallery'}
+          </DialogTitle>
+          {lightboxIndex !== null && (
+            <div className="relative aspect-[16/10] w-full">
+              <Image
+                src="/platform-background.png"
+                alt={galleryItems[lightboxIndex].title}
+                fill
+                className="object-cover"
+                style={{ objectPosition: galleryItems[lightboxIndex].position }}
+              />
+              <div className="absolute inset-0 cinematic-overlay" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <p className="text-on-cinematic text-xl font-bold">
+                  {galleryItems[lightboxIndex].title}
+                </p>
+              </div>
+              <Button
+                variant="glass"
+                size="icon"
+                className="absolute top-4 right-4"
+                onClick={() => setLightboxIndex(null)}
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Publications ───────────────────────────────────────────────────── */}
+      <section id="publications" className="py-16 sm:py-24">
+        <div className="page-container">
+          <ScrollReveal className="text-center mb-14">
+            <h2 className="text-on-cinematic mb-3">Publications & Research</h2>
+            <p className="text-muted-cinematic max-w-2xl mx-auto">
+              Evidence, policy briefs, and tools advancing feminist knowledge
+            </p>
+          </ScrollReveal>
+          <div className="grid sm:grid-cols-2 gap-5 sm:gap-6">
+            {publications.map((pub, i) => (
+              <ScrollReveal key={pub.title} delay={i * 0.08}>
+                <GlassCard interactive glow className="h-full">
+                  <CardContent className="p-6 sm:p-8">
+                    <div className="flex gap-4">
+                      <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-lg gradient-feminist flex items-center justify-center shrink-0 shadow-lg">
+                        <FileText className="w-7 h-7 text-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <Badge variant="outline" className="mb-2 border-fuchsia-400/30 text-fuchsia-200">
+                          {pub.type} · {pub.year}
+                        </Badge>
+                        <h3 className="font-bold text-on-cinematic text-lg leading-snug mb-2">
+                          {pub.title}
+                        </h3>
+                        <p className="text-sm text-muted-cinematic mb-4">{pub.pages} pages</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="hero" className="gap-1.5">
+                            <Download className="w-3.5 h-3.5" />
+                            Download
+                          </Button>
+                          <Button size="sm" variant="glass" className="gap-1.5">
+                            <Eye className="w-3.5 h-3.5" />
+                            Preview
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </GlassCard>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Impact Areas ───────────────────────────────────────────────────── */}
+      <section className="py-16 sm:py-24 pb-28">
+        <div className="page-container">
+          <ScrollReveal className="text-center mb-12">
+            <h2 className="text-on-cinematic">Impact Areas</h2>
+          </ScrollReveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { icon: Shield, label: 'SRHR Advocacy', count: '35 campaigns' },
               { icon: Heart, label: 'Women Empowerment', count: '150K+ beneficiaries' },
               { icon: Award, label: 'Governance', count: '25 policy impacts' },
               { icon: BookOpen, label: 'Research', count: '120+ publications' },
-            ].map((area) => {
+            ].map((area, i) => {
               const Icon = area.icon;
               return (
-                <Card key={area.label} className="text-center glass">
-                  <CardContent className="p-6">
-                    <Icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <p className="font-semibold">{area.label}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{area.count}</p>
-                  </CardContent>
-                </Card>
+                <ScrollReveal key={area.label} delay={i * 0.06}>
+                  <GlassCard interactive float className="text-center h-full">
+                    <CardContent className="p-6">
+                      <Icon className="w-9 h-9 text-fuchsia-300 mx-auto mb-3" />
+                      <p className="font-semibold text-on-cinematic">{area.label}</p>
+                      <p className="text-sm text-muted-cinematic mt-1">{area.count}</p>
+                    </CardContent>
+                  </GlassCard>
+                </ScrollReveal>
               );
             })}
           </div>
