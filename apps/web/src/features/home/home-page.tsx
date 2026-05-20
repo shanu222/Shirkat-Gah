@@ -257,7 +257,7 @@ export function HomePage() {
       <div className="section-divider mx-auto max-w-3xl my-4" />
 
       {/* ─── Impact Stats ───────────────────────────────────────────────────── */}
-      <section id="impact-stats" className="py-16 sm:py-24 relative">
+      <section id="impact-stats" className="py-16 sm:py-24 relative section-ambient section-scrim">
         <div className="page-container">
           <ScrollReveal className="text-center mb-12">
             <h2 className="text-on-cinematic mb-3">Our Impact at a Glance</h2>
@@ -274,17 +274,17 @@ export function HomePage() {
                   const Icon = stat.icon;
                   return (
                     <StaggerItem key={stat.label}>
-                      <GlassCard interactive glow float className="h-full">
-                        <CardContent className="p-6">
+                      <GlassCard variant="stat" interactive glow className="h-full">
+                        <CardContent className="p-6 sm:p-7">
                           <div
                             className={cn(
-                              'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center mb-4 shadow-lg',
+                              'w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center mb-5 stat-icon-glow',
                               stat.color,
                             )}
                           >
-                            <Icon className="w-6 h-6 text-white" />
+                            <Icon className="w-7 h-7 text-white" />
                           </div>
-                          <p className="text-2xl sm:text-3xl font-bold text-on-cinematic tabular-nums">
+                          <p className="text-2xl sm:text-4xl font-bold text-on-cinematic tabular-nums">
                             <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                           </p>
                           <p className="text-sm text-muted-cinematic mt-1">{stat.label}</p>
@@ -298,7 +298,7 @@ export function HomePage() {
       </section>
 
       {/* ─── How We Work ────────────────────────────────────────────────────── */}
-      <section id="how-we-work" className="py-16 sm:py-24 relative">
+      <section id="how-we-work" className="py-16 sm:py-24 relative section-ambient">
         <div className="page-container">
           <ScrollReveal className="text-center mb-14">
             <h2 className="text-on-cinematic mb-3">How We Work</h2>
@@ -311,9 +311,9 @@ export function HomePage() {
               const Icon = item.icon;
               return (
                 <ScrollReveal key={item.title} delay={i * 0.08}>
-                  <GlassCard interactive glow className="h-full">
-                    <CardContent className="p-6 flex flex-col h-full min-h-[220px]">
-                      <div className="w-14 h-14 rounded-2xl gradient-feminist flex items-center justify-center mb-5 shadow-lg floating-gentle">
+                  <GlassCard variant="premium" interactive glow className="h-full">
+                    <CardContent className="p-6 sm:p-7 flex flex-col h-full min-h-[220px]">
+                      <div className="w-14 h-14 rounded-2xl gradient-feminist flex items-center justify-center mb-5 stat-icon-glow floating-gentle">
                         <Icon className="w-7 h-7 text-white" />
                       </div>
                       <h3 className="text-lg font-bold text-on-cinematic mb-2">{item.title}</h3>
@@ -332,7 +332,7 @@ export function HomePage() {
       <div className="section-divider mx-auto max-w-3xl" />
 
       {/* ─── Platform Modules ───────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-24 section-ambient">
         <div className="page-container">
           <ScrollReveal className="text-center mb-14">
             <h2 className="text-on-cinematic mb-3">Integrated Platform</h2>
@@ -376,7 +376,7 @@ export function HomePage() {
       </section>
 
       {/* ─── Gallery ────────────────────────────────────────────────────────── */}
-      <section id="gallery" className="py-16 sm:py-24">
+      <section id="gallery" className="py-16 sm:py-24 section-ambient">
         <div className="page-container">
           <ScrollReveal className="text-center mb-14">
             <h2 className="text-on-cinematic mb-3">Moments of Solidarity</h2>
@@ -398,7 +398,7 @@ export function HomePage() {
                   type="button"
                   onClick={() => setLightboxIndex(i)}
                   className={cn(
-                    'group relative w-full h-full min-h-[180px] rounded-2xl overflow-hidden glass-card-interactive border-0 p-0 text-left',
+                    'group relative w-full h-full min-h-[180px] rounded-[24px] overflow-hidden glass-card glass-card-interactive border-0 p-0 text-left',
                     i === 0 && 'md:min-h-[460px]',
                   )}
                 >
@@ -410,7 +410,7 @@ export function HomePage() {
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                     style={{ objectPosition: item.position }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[rgba(15,5,25,0.85)] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,4,20,0.92)] via-[rgba(12,4,20,0.35)] to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
                     <p className="text-on-cinematic font-semibold text-sm sm:text-base">{item.title}</p>
                     <ZoomIn className="w-5 h-5 text-white/70 group-hover:text-white shrink-0" />
@@ -423,7 +423,7 @@ export function HomePage() {
       </section>
 
       <Dialog open={lightboxIndex !== null} onOpenChange={() => setLightboxIndex(null)}>
-        <DialogContent className="max-w-4xl glass border-white/20 p-0 overflow-hidden bg-[rgba(15,8,25,0.95)]">
+        <DialogContent className="max-w-4xl glass-modal p-0 overflow-hidden border-0">
           <DialogTitle className="sr-only">
             {lightboxIndex !== null ? galleryItems[lightboxIndex]?.title : 'Gallery'}
           </DialogTitle>
@@ -457,7 +457,7 @@ export function HomePage() {
       </Dialog>
 
       {/* ─── Publications ───────────────────────────────────────────────────── */}
-      <section id="publications" className="py-16 sm:py-24">
+      <section id="publications" className="py-16 sm:py-24 section-ambient section-scrim">
         <div className="page-container">
           <ScrollReveal className="text-center mb-14">
             <h2 className="text-on-cinematic mb-3">Publications & Research</h2>
@@ -468,10 +468,10 @@ export function HomePage() {
           <div className="grid sm:grid-cols-2 gap-5 sm:gap-6">
             {publications.map((pub, i) => (
               <ScrollReveal key={pub.title} delay={i * 0.08}>
-                <GlassCard interactive glow className="h-full">
+                <GlassCard variant="premium" interactive glow className="h-full">
                   <CardContent className="p-6 sm:p-8">
                     <div className="flex gap-4">
-                      <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-lg gradient-feminist flex items-center justify-center shrink-0 shadow-lg">
+                      <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-xl gradient-feminist flex items-center justify-center shrink-0 stat-icon-glow">
                         <FileText className="w-7 h-7 text-white" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -503,7 +503,7 @@ export function HomePage() {
       </section>
 
       {/* ─── Impact Areas ───────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 pb-28">
+      <section className="py-16 sm:py-24 pb-28 section-ambient">
         <div className="page-container">
           <ScrollReveal className="text-center mb-12">
             <h2 className="text-on-cinematic">Impact Areas</h2>

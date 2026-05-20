@@ -9,7 +9,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <div className="absolute inset-0 cinematic-overlay-strong pointer-events-none" aria-hidden />
-      <Card className="w-full max-w-md glass-card shadow-xl relative z-10">
+      <Card className="w-full max-w-md glass-panel shadow-xl relative z-10">
         <CardHeader>
           <CardTitle>Request Platform Access</CardTitle>
           <CardDescription>

@@ -44,11 +44,11 @@ export function PageHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5 min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-balance">{title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-balance text-on-cinematic">{title}</h1>
             {badge}
           </div>
           {description && (
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl text-balance">{description}</p>
+            <p className="text-sm sm:text-base text-muted-cinematic max-w-2xl text-balance">{description}</p>
           )}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}

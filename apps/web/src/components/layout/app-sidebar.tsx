@@ -88,7 +88,7 @@ export function AppSidebar({ mobile, onNavigate }: AppSidebarProps) {
     <TooltipProvider>
       <aside
         className={cn(
-          'flex flex-col h-full bg-sidebar border-r border-sidebar-border',
+          'flex flex-col h-full glass-panel border-r border-white/14',
           mobile ? 'w-full' : isCollapsed ? 'w-[72px]' : 'w-[260px]',
           'transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
         )}

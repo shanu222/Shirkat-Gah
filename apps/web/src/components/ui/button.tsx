@@ -22,7 +22,7 @@ const buttonVariants = cva(
         hero:
           "gradient-cta text-white border-0 hover:brightness-110 hover:shadow-xl hover:scale-[1.02] shadow-md",
         glass:
-          "glass-subtle text-foreground hover:bg-white/15 border-white/20 hover:border-fuchsia-400/30",
+          "glass-subtle text-white hover:border-fuchsia-400/35 hover:shadow-[0_0_24px_rgba(217,70,239,0.15)]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

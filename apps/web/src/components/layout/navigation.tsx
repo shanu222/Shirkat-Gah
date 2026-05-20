@@ -86,8 +86,8 @@ export function Navigation() {
       className={cn(
         'sticky top-0 z-50 transition-all duration-300',
         scrolled
-          ? 'border-b border-white/15 bg-[rgba(15,8,25,0.72)] backdrop-blur-xl shadow-lg shadow-purple-950/20'
-          : 'border-b border-transparent bg-transparent',
+          ? 'border-b border-white/14 bg-[rgba(20,20,28,0.88)] backdrop-blur-[18px] shadow-[0_8px_32px_rgba(0,0,0,0.35)]'
+          : 'border-b border-transparent bg-[rgba(20,20,28,0.35)] backdrop-blur-md',
       )}
     >
       <div className="page-container">
@@ -157,7 +157,7 @@ export function Navigation() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[min(100vw-2rem,320px)] glass border-white/20 bg-[rgba(15,8,25,0.92)] backdrop-blur-2xl"
+              className="w-[min(100vw-2rem,320px)] glass-panel border-white/14"
             >
               <div className="flex flex-col gap-1 mt-10">
                 <NavLinks mobile />

@@ -50,8 +50,8 @@ export function AppHeader({ title, className }: AppHeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex h-14 sm:h-16 items-center gap-3 border-b border-white/15',
-        'bg-[rgba(15,8,25,0.65)] backdrop-blur-xl',
+        'sticky top-0 z-40 flex h-14 sm:h-16 items-center gap-3 border-b border-white/14',
+        'bg-[rgba(20,20,28,0.88)] backdrop-blur-[18px] shadow-[0_4px_24px_rgba(0,0,0,0.28)]',
         'px-4 sm:px-6',
         className,
       )}

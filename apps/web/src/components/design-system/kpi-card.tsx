@@ -5,8 +5,6 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScaleOnHover } from '@/components/design-system/motion';
-
 export interface KpiCardProps {
   label: string;
   value: string;
@@ -29,19 +27,18 @@ export function KpiCard({
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
 
   return (
-    <ScaleOnHover>
-      <Card className={cn('surface-interactive overflow-hidden group', className)}>
+      <Card className={cn('glass-card-stat glass-card-interactive overflow-hidden group', className)}>
         <CardContent className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div
               className={cn(
-                'w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-md',
-                'ring-1 ring-white/20 transition-transform duration-200 group-hover:scale-105',
+                'w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center stat-icon-glow',
+                'transition-transform duration-300 group-hover:scale-105',
                 gradient,
               )}
               aria-hidden
             >
-              <Icon className="w-5 h-5 text-white" />
+              <Icon className="w-6 h-6 text-white" />
             </div>
             {change && (
               <Badge
@@ -57,13 +54,12 @@ export function KpiCard({
               </Badge>
             )}
           </div>
-          <p className="text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums text-foreground mb-1">
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight tabular-nums text-on-cinematic mb-1">
             {value}
           </p>
-          <p className="text-sm text-muted-foreground leading-snug">{label}</p>
+          <p className="text-sm text-muted-cinematic leading-snug">{label}</p>
         </CardContent>
       </Card>
-    </ScaleOnHover>
   );
 }
 

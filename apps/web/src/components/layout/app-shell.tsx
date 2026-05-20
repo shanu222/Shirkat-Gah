@@ -1,5 +1,6 @@
 import { Navigation } from '@/components/layout/navigation';
 import { DashboardShell } from '@/components/layout/dashboard-shell';
+import { PremiumCursorGlow } from '@/components/design-system';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -14,12 +15,13 @@ export function AppShell({ children, variant = 'marketing', title }: AppShellPro
   }
 
   return (
-    <div className="min-h-screen flex flex-col gradient-mesh">
+    <div className="min-h-screen flex flex-col gradient-mesh relative">
+      <PremiumCursorGlow />
       <Navigation />
       <main id="main-content" className="flex-1 overflow-x-hidden" tabIndex={-1}>
         {children}
       </main>
-      <footer className="border-t border-white/15 glass-subtle backdrop-blur-xl py-10 mt-auto">
+      <footer className="border-t border-white/15 glass-panel py-10 mt-auto">
         <div className="page-container">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-cinematic">

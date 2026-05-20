@@ -80,7 +80,7 @@ export default function LoginForm() {
           <p className="text-muted-cinematic mt-2 text-sm">Secure access for authorized personnel</p>
         </div>
 
-        <Card className="glass-card shadow-xl">
+        <Card className="glass-panel shadow-xl">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-semibold">Welcome back</CardTitle>
             <CardDescription>Enter your credentials to access the platform</CardDescription>
