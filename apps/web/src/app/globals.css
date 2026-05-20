@@ -74,6 +74,10 @@
   --teal: #14b8a6;
   --orange-accent: #f97316;
   --charcoal: #0f172a;
+
+  /* Platform-wide background photo */
+  --platform-background-image: url('/platform-background.png');
+  --platform-background-overlay: rgba(248, 250, 252, 0.82);
 }
 
 .dark {
@@ -105,6 +109,7 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.35);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+  --platform-background-overlay: rgba(11, 17, 32, 0.84);
 }
 
 @theme inline {
@@ -174,8 +179,16 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply text-foreground antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background-color: var(--background);
+    background-image:
+      linear-gradient(var(--platform-background-overlay), var(--platform-background-overlay)),
+      var(--platform-background-image);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   h1 {
@@ -213,7 +226,7 @@
   }
 
   .gradient-hero {
-    @apply bg-gradient-to-br from-emerald-50/80 via-white to-sky-50/60 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900;
+    @apply bg-gradient-to-br from-emerald-50/25 via-transparent to-sky-50/20 dark:from-slate-950/35 dark:via-transparent dark:to-slate-900/25;
   }
 
   .gradient-mesh {

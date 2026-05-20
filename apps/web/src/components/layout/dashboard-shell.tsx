@@ -13,7 +13,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, title, className }: DashboardShellProps) {
   return (
-    <div className="min-h-screen flex bg-background gradient-mesh">
+    <div className="min-h-screen flex gradient-mesh">
       <div className="hidden lg:flex shrink-0">
         <AppSidebar />
       </div>

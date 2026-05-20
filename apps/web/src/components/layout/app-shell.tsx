@@ -14,7 +14,7 @@ export function AppShell({ children, variant = 'marketing', title }: AppShellPro
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col gradient-mesh">
+    <div className="min-h-screen flex flex-col gradient-mesh">
       <Navigation />
       <main id="main-content" className="flex-1 overflow-x-hidden" tabIndex={-1}>
         {children}
